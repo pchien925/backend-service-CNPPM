@@ -1,4 +1,4 @@
-import { Body, Get, HttpStatus, Post } from '@nestjs/common';
+import { Body, Get, Headers, HttpStatus, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { AccountDto } from './dtos/account.dto';
 import { AccountService } from './account.service';
 import { ApiController } from 'src/decorators/api-controller.decorator';
@@ -55,5 +55,14 @@ export class AccountController {
   async login(@Body() dto: LoginAccountDto): Promise<ApiResponse<LoginResponseDto>> {
     const result = await this.accountService.login(dto);
     return new ApiResponse(result, 'Login successfully', HttpStatus.OK);
+  }
+
+  @Get('profile')
+  @ApiOperation({ summary: 'Get current account profile (from token)' })
+  async getProfile(@Headers('Authorization') authHeader: string): Promise<ApiResponse<AccountDto>> {
+    if (!authHeader) throw new UnauthorizedException('Authorization header is missing');
+    const token = authHeader.replace('Bearer ', '');
+    const account = await this.accountService.getAccountByToken(token);
+    return new ApiResponse(account, 'Get profile successfully', HttpStatus.OK);
   }
 }

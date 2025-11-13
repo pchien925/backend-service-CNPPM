@@ -193,4 +193,40 @@ export class AccountService {
       message: 'New OTP has been sent to your email',
     };
   }
+  async getAccountByToken(token: string): Promise<AccountDto> {
+    if (!token) {
+      throw new BadRequestException('Token là bắt buộc');
+    }
+
+    let payload: any;
+
+    try {
+      payload = this.jwtService.verify(token);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token đã hết hạn');
+      }
+      if (error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Token không hợp lệ');
+      }
+      throw new UnauthorizedException('Xác thực thất bại');
+    }
+
+    const accountId = payload.id;
+
+    if (!accountId) {
+      throw new UnauthorizedException('Token không chứa thông tin tài khoản');
+    }
+
+    const account = await this.accountRepo.findOne({
+      where: { id: accountId },
+      relations: ['group'],
+    });
+
+    if (!account) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+
+    return AccountMapper.toResponse(account);
+  }
 }
