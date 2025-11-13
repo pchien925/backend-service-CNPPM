@@ -5,6 +5,8 @@ import { ApiController } from 'src/decorators/api-controller.decorator';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { LoginAccountDto } from './dtos/login-account.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
+import { VerifyOtpDto } from './dtos/verify-otp.dto';
+import { ResendOtpDto } from './dtos/resend-otp.dto';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { ApiOperation } from '@nestjs/swagger';
 
@@ -19,11 +21,33 @@ export class AccountController {
     return new ApiResponse(accounts, 'Get list accounts successfully', HttpStatus.OK);
   }
 
-  @Post('create')
-  @ApiOperation({ summary: 'Create new account' })
-  async create(@Body() dto: CreateAccountDto): Promise<ApiResponse<AccountDto>> {
-    const account = await this.accountService.create(dto);
-    return new ApiResponse(account, 'Account created successfully', HttpStatus.CREATED);
+  @Post('register')
+  @ApiOperation({ summary: 'Register new account and send OTP to email' })
+  async register(
+    @Body() dto: CreateAccountDto,
+  ): Promise<ApiResponse<{ message: string; email: string }>> {
+    const result = await this.accountService.create(dto);
+    return new ApiResponse(
+      result,
+      'Registration successful. Please check your email for OTP.',
+      HttpStatus.CREATED,
+    );
+  }
+
+  @Post('verify-otp')
+  @ApiOperation({ summary: 'Verify OTP code to complete registration' })
+  async verifyOtp(
+    @Body() dto: VerifyOtpDto,
+  ): Promise<ApiResponse<{ message: string; account: AccountDto }>> {
+    const result = await this.accountService.verifyOtp(dto);
+    return new ApiResponse(result, 'Email verified successfully', HttpStatus.OK);
+  }
+
+  @Post('resend-otp')
+  @ApiOperation({ summary: 'Resend OTP code to email' })
+  async resendOtp(@Body() dto: ResendOtpDto): Promise<ApiResponse<{ message: string }>> {
+    const result = await this.accountService.resendOtp(dto);
+    return new ApiResponse(result, 'OTP resent successfully', HttpStatus.OK);
   }
 
   @Post('login')

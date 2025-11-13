@@ -6,9 +6,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Account } from './entities/account.entity';
 import { Group } from '../group/entities/group.entity';
+import { EmailService } from '../../shared/services/email.service';
 
 @Module({
-  providers: [AccountService],
+  providers: [AccountService, EmailService],
   controllers: [AccountController],
   imports: [
     TypeOrmModule.forFeature([Account, Group]),
