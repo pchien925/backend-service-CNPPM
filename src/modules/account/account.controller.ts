@@ -3,6 +3,8 @@ import { AccountDto } from './dtos/account.dto';
 import { AccountService } from './account.service';
 import { ApiController } from 'src/decorators/api-controller.decorator';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { LoginAccountDto } from './dtos/login-account.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { ApiOperation } from '@nestjs/swagger';
 
@@ -22,5 +24,12 @@ export class AccountController {
   async create(@Body() dto: CreateAccountDto): Promise<ApiResponse<AccountDto>> {
     const account = await this.accountService.create(dto);
     return new ApiResponse(account, 'Account created successfully', HttpStatus.CREATED);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Login to the system' })
+  async login(@Body() dto: LoginAccountDto): Promise<ApiResponse<LoginResponseDto>> {
+    const result = await this.accountService.login(dto);
+    return new ApiResponse(result, 'Login successfully', HttpStatus.OK);
   }
 }
