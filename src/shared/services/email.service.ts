@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
+import emailConfig from 'src/configs/email.config';
 
 @Injectable()
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    @Inject(emailConfig.KEY)
+    private readonly config: ConfigType<typeof emailConfig>,
+  ) {
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get('SMTP_HOST', 'smtp.gmail.com'),
-      port: parseInt(this.configService.get('SMTP_PORT', '587')),
-      secure: false, // true for 465, false for other ports
+      host: this.config.host,
+      port: this.config.port,
+      secure: this.config.secure,
       auth: {
-        user: this.configService.get('SMTP_USER'),
-        pass: this.configService.get('SMTP_PASS'),
+        user: this.config.user,
+        pass: this.config.pass,
       },
     });
   }
 
   async sendOtpEmail(email: string, otp: string, fullName: string): Promise<void> {
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM', 'noreply@example.com'),
+      from: this.config.from,
       to: email,
       subject: 'Xác thực tài khoản - Mã OTP',
       html: `

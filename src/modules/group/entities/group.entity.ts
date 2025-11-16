@@ -1,9 +1,8 @@
-// src/rbac/entities/group.entity.ts
 import { Entity, PrimaryColumn, Column, BeforeInsert, ManyToMany, JoinTable } from 'typeorm';
 import { IsInt, IsNotEmpty } from 'class-validator';
-import { SnowflakeValueGenerator } from 'src/common/id/snowflake-value.generator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
+import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
 
 @Entity({ name: `tbl_group` })
 export class Group extends Auditable<string> {

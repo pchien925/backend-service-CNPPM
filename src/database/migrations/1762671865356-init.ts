@@ -123,6 +123,7 @@ export class Init1762671865356 implements MigrationInterface {
             INSERT INTO \`tbl_account\` (\`id\`, \`kind\`, \`username\`, \`email\`, \`password\`, \`full_name\`, \`last_login\`, \`avatar_path\`, \`reset_pwd_code\`, \`reset_pwd_time\`, \`attempt_forget_pwd\`, \`is_super_admin\`, \`group_id\`, \`status\`, \`created_by\`, \`created_date\`, \`modified_by\`, \`modified_date\`, \`phone\`) VALUES
             (2, 1, 'admin', 'pchien925@gmail.com', '{bcrypt}$2a$10$YMZFAA1FLQQzz29qLCtHG.8oBvq0g/6tpX0ODh269rckAU9lsgrrS', 'Super Admin', '2023-03-27 03:52:17', NULL, '0622', '2021-03-11 17:16:26', 0, 1, 15, 1, 'Admin', '2020-06-24 00:22:30', 'admin', '2023-04-16 14:52:55', '0979859559');
         `);
+    //$2b$10$VtWZrXfMIs.R4W/z/J9/5OgaPlRVbSKHz6lLV0Ayf0qzf1auY8YRS - 123456
 
     await queryRunner.query(`
             INSERT INTO \`tbl_permission_group\` (\`group_id\`, \`permission_id\`) VALUES

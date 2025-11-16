@@ -43,6 +43,18 @@ export class AccountMapper {
     };
   }
 
+  static toDetailResponse(entity: Account): AccountDto {
+    return {
+      id: entity.id,
+      username: entity.username,
+      email: entity.email,
+      fullName: entity.fullName,
+      phone: entity.phone,
+      avatarPath: entity.avatarPath,
+      group: entity.group ? GroupMapper.toDetailResponse(entity.group) : null,
+    };
+  }
+
   static toResponseList(entities: Account[]): AccountDto[] {
     return entities.map(e => this.toResponse(e));
   }
