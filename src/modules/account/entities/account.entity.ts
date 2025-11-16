@@ -1,8 +1,8 @@
 import { Entity, Column, BeforeInsert, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { IsNotEmpty, IsEmail, IsBoolean, IsInt } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
-import { SnowflakeValueGenerator } from 'src/common/id/snowflake-value.generator';
 import { Group } from 'src/modules/group/entities/group.entity';
+import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
 
 @Entity({ name: `tbl_account` })
 export class Account extends Auditable<string> {

@@ -1,18 +1,20 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { Account } from './entities/account.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { STATUS_ACTIVE } from 'src/constants/app.constant';
+import { EmailService } from 'src/shared/services/email.service';
+import { verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
+import { UserDetailsDto } from '../auth/dtos/user-details.dto';
 import { Group } from '../group/entities/group.entity';
+import { AccountMapper } from './account.mapper';
+import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { LoginAccountDto } from './dtos/login-account.dto';
-import { AccountDto } from './dtos/account.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
-import { VerifyOtpDto } from './dtos/verify-otp.dto';
 import { ResendOtpDto } from './dtos/resend-otp.dto';
-import { AccountMapper } from './account.mapper';
-import { EmailService } from '../../shared/services/email.service';
-import * as bcrypt from 'bcrypt';
+import { VerifyOtpDto } from './dtos/verify-otp.dto';
+import { Account } from './entities/account.entity';
 
 @Injectable()
 export class AccountService {
@@ -76,7 +78,7 @@ export class AccountService {
   async login(dto: LoginAccountDto): Promise<LoginResponseDto> {
     // Tìm tài khoản theo username hoặc email
     const account = await this.accountRepo.findOne({
-      where: [{ username: dto.usernameOrEmail }, { email: dto.usernameOrEmail }],
+      where: [{ username: dto.username }, { email: dto.username }],
       relations: ['group'],
       select: ['id', 'username', 'email', 'password', 'fullName', 'phone', 'avatarPath', 'group'],
     });
@@ -93,7 +95,7 @@ export class AccountService {
     }
 
     // Kiểm tra mật khẩu
-    const isPasswordValid = await bcrypt.compare(dto.password, account.password);
+    const isPasswordValid = await verifyPassword(dto.password, account.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid username/email or password');
     }
@@ -228,5 +230,55 @@ export class AccountService {
     }
 
     return AccountMapper.toResponse(account);
+  }
+
+  async getAccountById(id: number): Promise<AccountDto> {
+    const account = await this.accountRepo.findOne({
+      where: { id: id },
+      relations: ['group', 'group.permissions'],
+    });
+
+    if (!account) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+
+    return AccountMapper.toDetailResponse(account);
+  }
+
+  async validateCredentials(username: string, password: string): Promise<UserDetailsDto> {
+    const account = await this.accountRepo.findOne({
+      where: { username, status: STATUS_ACTIVE },
+      relations: ['group', 'group.permissions'],
+      select: [
+        'id',
+        'username',
+        'email',
+        'password',
+        'fullName',
+        'phone',
+        'avatarPath',
+        'kind',
+        'isSuperAdmin',
+      ],
+    });
+    if (!account) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const match = verifyPassword(password, account.password);
+    if (!match) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const authorities = (account.group?.permissions ?? [])
+      .map(p => p.permissionCode)
+      .filter(Boolean);
+
+    return new UserDetailsDto(
+      account.id,
+      account.username,
+      account.kind,
+      authorities,
+      account.isSuperAdmin,
+    );
   }
 }

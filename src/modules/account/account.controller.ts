@@ -1,16 +1,17 @@
-import { Body, Get, Headers, HttpStatus, Post, Query, UnauthorizedException } from '@nestjs/common';
-import { AccountDto } from './dtos/account.dto';
+import { Body, Get, Headers, HttpStatus, Post, Req, UnauthorizedException } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { AccountService } from './account.service';
-import { ApiController } from 'src/decorators/api-controller.decorator';
+import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { LoginAccountDto } from './dtos/login-account.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
-import { VerifyOtpDto } from './dtos/verify-otp.dto';
 import { ResendOtpDto } from './dtos/resend-otp.dto';
+import { VerifyOtpDto } from './dtos/verify-otp.dto';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiController } from 'src/common/decorators/api-controller.decorator';
+import { Permissions } from 'src/common/decorators/permissions.decorator';
 
-@ApiController('accounts', { auth: true })
+@ApiController('account', { auth: true })
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
@@ -58,11 +59,9 @@ export class AccountController {
   }
 
   @Get('profile')
-  @ApiOperation({ summary: 'Get current account profile (from token)' })
-  async getProfile(@Headers('Authorization') authHeader: string): Promise<ApiResponse<AccountDto>> {
-    if (!authHeader) throw new UnauthorizedException('Authorization header is missing');
-    const token = authHeader.replace('Bearer ', '');
-    const account = await this.accountService.getAccountByToken(token);
+  @ApiOperation({ summary: 'Get current account profile' })
+  async getProfile(@Req() req: any) {
+    const account = await this.accountService.getAccountById(req.user.id);
     return new ApiResponse(account, 'Get profile successfully', HttpStatus.OK);
   }
 }
