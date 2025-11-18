@@ -10,6 +10,7 @@ import { VerifyOtpDto } from './dtos/verify-otp.dto';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiController('account', { auth: true })
 export class AccountController {
@@ -22,6 +23,7 @@ export class AccountController {
     return new ApiResponse(accounts, 'Get list accounts successfully', HttpStatus.OK);
   }
 
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register new account and send OTP to email' })
   async register(
@@ -35,6 +37,7 @@ export class AccountController {
     );
   }
 
+  @Public()
   @Post('verify-otp')
   @ApiOperation({ summary: 'Verify OTP code to complete registration' })
   async verifyOtp(
@@ -44,6 +47,7 @@ export class AccountController {
     return new ApiResponse(result, 'Email verified successfully', HttpStatus.OK);
   }
 
+  @Public()
   @Post('resend-otp')
   @ApiOperation({ summary: 'Resend OTP code to email' })
   async resendOtp(@Body() dto: ResendOtpDto): Promise<ApiResponse<{ message: string }>> {
