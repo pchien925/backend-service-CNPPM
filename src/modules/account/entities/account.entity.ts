@@ -58,10 +58,6 @@ export class Account extends Auditable<string> {
   @IsBoolean()
   isSuperAdmin: boolean = false;
 
-  @Column({ name: 'email_verified', type: 'boolean', default: false })
-  @IsBoolean()
-  emailVerified: boolean = false;
-
   @Column({ name: 'otp_code', nullable: true, length: 6 })
   otpCode?: string;
 
