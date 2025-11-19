@@ -9,6 +9,8 @@ import { AuthService } from './auth.service';
 import { loginDto } from './dtos/login.dto';
 import { ResendOtpDto } from './dtos/resend-otp.dto';
 import { VerifyOtpDto } from './dtos/verify-otp.dto';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @ApiController('auth', { auth: true })
 export class AuthController {
@@ -51,5 +53,21 @@ export class AuthController {
   async resendOtp(@Body() dto: ResendOtpDto) {
     const result = await this.accountService.resendOtp(dto);
     return new ApiResponse(result, 'OTP resent successfully', HttpStatus.OK);
+  }
+
+  // FORGOT PASSWORD
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    const result = await this.accountService.forgotPassword(dto.email);
+    return new ApiResponse(result, 'Password reset OTP sent successfully', HttpStatus.OK);
+  }
+
+  // RESET PASSWORD
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    const result = await this.accountService.resetPassword(dto.email, dto.otpCode, dto.newPassword);
+    return new ApiResponse(result, 'Password reset successfully', HttpStatus.OK);
   }
 }

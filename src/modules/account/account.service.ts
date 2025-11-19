@@ -227,4 +227,87 @@ export class AccountService {
       account.isSuperAdmin,
     );
   }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const account = await this.accountRepo.findOne({
+      where: { email },
+    });
+
+    if (!account) {
+      throw new BadRequestException('Account not found with this email');
+    }
+
+    // Tạm thời tắt validation email verification
+    // if (!account.emailVerified) {
+    //   throw new BadRequestException('Email not verified. Please verify your email first.');
+    // }
+
+    // Generate OTP for password reset
+    const otpCode = this.emailService.generateOtp();
+    const otpExpiresAt = new Date();
+    otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 10); // 10 phút cho reset password
+
+    // Update account with reset OTP
+    account.otpCode = otpCode;
+    account.otpExpiresAt = otpExpiresAt;
+    account.resetPwdCode = otpCode; // Sử dụng field resetPwdCode để phân biệt với register OTP
+    account.resetPwdTime = otpExpiresAt;
+
+    await this.accountRepo.save(account);
+
+    // Send forgot password email
+    try {
+      await this.emailService.sendForgotPasswordEmail(email, otpCode, account.fullName);
+    } catch {
+      throw new BadRequestException('Failed to send reset password email. Please try again.');
+    }
+
+    return {
+      message: 'Password reset OTP has been sent to your email',
+    };
+  }
+
+  async resetPassword(
+    email: string,
+    otpCode: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const account = await this.accountRepo.findOne({
+      where: { email },
+    });
+
+    if (!account) {
+      throw new BadRequestException('Account not found');
+    }
+
+    if (!account.resetPwdCode || !account.resetPwdTime) {
+      throw new BadRequestException('No password reset request found. Please request a new one.');
+    }
+
+    if (new Date() > account.resetPwdTime) {
+      throw new BadRequestException('Password reset OTP has expired. Please request a new one.');
+    }
+
+    if (account.resetPwdCode !== otpCode) {
+      throw new BadRequestException('Invalid OTP code');
+    }
+
+    // Hash new password
+    const bcrypt = await import('bcrypt');
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password and clear reset fields
+    account.password = hashedPassword;
+    account.resetPwdCode = null;
+    account.resetPwdTime = null;
+    account.otpCode = null;
+    account.otpExpiresAt = null;
+
+    await this.accountRepo.save(account);
+
+    return {
+      message: 'Password has been reset successfully. You can now login with your new password.',
+    };
+  }
 }

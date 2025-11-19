@@ -6,8 +6,9 @@ import { GroupModule } from './modules/group/group.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from './configs/jwt.config';
-import emailConfig from './configs/email.config';
+import { mailerConfig } from './configs/email.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
@@ -15,8 +16,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [emailConfig],
     }),
+    MailerModule.forRootAsync(mailerConfig),
     JwtModule.registerAsync(jwtConfig),
     DatabaseModule,
     AccountModule,
