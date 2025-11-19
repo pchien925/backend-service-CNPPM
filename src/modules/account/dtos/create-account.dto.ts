@@ -33,8 +33,8 @@ export class CreateAccountDto {
   @IsOptional()
   avatarPath?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsInt({ message: 'groupId must be an integer' })
-  @IsNotEmpty({ message: 'groupId should not be empty' })
-  groupId!: number; //default gắn 16 nha
+  groupId?: number; //default gắn 16
 }

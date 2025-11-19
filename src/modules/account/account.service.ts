@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { STATUS_ACTIVE } from 'src/constants/app.constant';
-import { EmailService } from 'src/shared/services/email.service';
+import { STATUS_ACTIVE, STATUS_PENDING } from 'src/constants/app.constant';
+import { EmailService } from 'src/shared/services/email/email.service';
 import { verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
 import { UserDetailsDto } from '../auth/dtos/user-details.dto';
@@ -12,8 +12,8 @@ import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { LoginAccountDto } from './dtos/login-account.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
-import { ResendOtpDto } from './dtos/resend-otp.dto';
-import { VerifyOtpDto } from './dtos/verify-otp.dto';
+import { ResendOtpDto } from '../auth/dtos/resend-otp.dto';
+import { VerifyOtpDto } from '../auth/dtos/verify-otp.dto';
 import { Account } from './entities/account.entity';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class AccountService {
 
     account.otpCode = otpCode;
     account.otpExpiresAt = otpExpiresAt;
-    account.emailVerified = false;
+    account.status = STATUS_PENDING;
 
     const saved = await this.accountRepo.save(account);
 
@@ -75,52 +75,6 @@ export class AccountService {
     };
   }
 
-  async login(dto: LoginAccountDto): Promise<LoginResponseDto> {
-    // Tìm tài khoản theo username hoặc email
-    const account = await this.accountRepo.findOne({
-      where: [{ username: dto.username }, { email: dto.username }],
-      relations: ['group'],
-      select: ['id', 'username', 'email', 'password', 'fullName', 'phone', 'avatarPath', 'group'],
-    });
-
-    if (!account) {
-      throw new UnauthorizedException('Invalid username/email or password');
-    }
-
-    // Kiểm tra email đã được xác thực chưa
-    if (!account.emailVerified) {
-      throw new UnauthorizedException(
-        'Email not verified. Please check your email for OTP verification.',
-      );
-    }
-
-    // Kiểm tra mật khẩu
-    const isPasswordValid = await verifyPassword(dto.password, account.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid username/email or password');
-    }
-
-    // Tạo JWT token
-    const payload = {
-      id: account.id,
-      username: account.username,
-      email: account.email,
-    };
-    const accessToken = this.jwtService.sign(payload);
-
-    // Cập nhật lastLogin
-    account.lastLogin = new Date();
-    await this.accountRepo.save(account);
-
-    const accountDto = AccountMapper.toResponse(account);
-    return {
-      accessToken,
-      account: accountDto,
-      tokenType: 'Bearer',
-      expiresIn: 604800,
-    };
-  }
-
   async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string; account: AccountDto }> {
     const account = await this.accountRepo.findOne({
       where: { email: dto.email },
@@ -129,10 +83,6 @@ export class AccountService {
 
     if (!account) {
       throw new BadRequestException('Account not found');
-    }
-
-    if (account.emailVerified) {
-      throw new BadRequestException('Email already verified');
     }
 
     if (!account.otpCode || !account.otpExpiresAt) {
@@ -148,9 +98,9 @@ export class AccountService {
     }
 
     // Xác thực thành công - cập nhật trạng thái
-    account.emailVerified = true;
     account.otpCode = null;
     account.otpExpiresAt = null;
+    account.status = STATUS_ACTIVE;
 
     const updatedAccount = await this.accountRepo.save(account);
     const accountDto = AccountMapper.toResponse(updatedAccount);
@@ -168,10 +118,6 @@ export class AccountService {
 
     if (!account) {
       throw new BadRequestException('Account not found');
-    }
-
-    if (account.emailVerified) {
-      throw new BadRequestException('Email already verified');
     }
 
     // Tạo OTP mới
