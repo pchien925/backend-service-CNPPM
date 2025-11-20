@@ -5,15 +5,13 @@ import { STATUS_ACTIVE, STATUS_PENDING } from 'src/constants/app.constant';
 import { EmailService } from 'src/shared/services/email/email.service';
 import { verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
+import { ResendOtpDto } from '../auth/dtos/resend-otp.dto';
 import { UserDetailsDto } from '../auth/dtos/user-details.dto';
+import { VerifyOtpDto } from '../auth/dtos/verify-otp.dto';
 import { Group } from '../group/entities/group.entity';
 import { AccountMapper } from './account.mapper';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
-import { LoginAccountDto } from './dtos/login-account.dto';
-import { LoginResponseDto } from './dtos/login-response.dto';
-import { ResendOtpDto } from '../auth/dtos/resend-otp.dto';
-import { VerifyOtpDto } from '../auth/dtos/verify-otp.dto';
 import { Account } from './entities/account.entity';
 
 @Injectable()
@@ -141,42 +139,6 @@ export class AccountService {
       message: 'New OTP has been sent to your email',
     };
   }
-  async getAccountByToken(token: string): Promise<AccountDto> {
-    if (!token) {
-      throw new BadRequestException('Token là bắt buộc');
-    }
-
-    let payload: any;
-
-    try {
-      payload = this.jwtService.verify(token);
-    } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Token đã hết hạn');
-      }
-      if (error.name === 'JsonWebTokenError') {
-        throw new UnauthorizedException('Token không hợp lệ');
-      }
-      throw new UnauthorizedException('Xác thực thất bại');
-    }
-
-    const accountId = payload.id;
-
-    if (!accountId) {
-      throw new UnauthorizedException('Token không chứa thông tin tài khoản');
-    }
-
-    const account = await this.accountRepo.findOne({
-      where: { id: accountId },
-      relations: ['group'],
-    });
-
-    if (!account) {
-      throw new BadRequestException('Tài khoản không tồn tại');
-    }
-
-    return AccountMapper.toResponse(account);
-  }
 
   async getAccountById(id: number): Promise<AccountDto> {
     const account = await this.accountRepo.findOne({
@@ -236,11 +198,6 @@ export class AccountService {
     if (!account) {
       throw new BadRequestException('Account not found with this email');
     }
-
-    // Tạm thời tắt validation email verification
-    // if (!account.emailVerified) {
-    //   throw new BadRequestException('Email not verified. Please verify your email first.');
-    // }
 
     // Generate OTP for password reset
     const otpCode = this.emailService.generateOtp();

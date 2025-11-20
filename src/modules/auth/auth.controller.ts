@@ -1,4 +1,4 @@
-import { Body, Get, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard';
@@ -6,11 +6,11 @@ import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { loginDto } from './dtos/login.dto';
 import { ResendOtpDto } from './dtos/resend-otp.dto';
-import { VerifyOtpDto } from './dtos/verify-otp.dto';
-import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { VerifyOtpDto } from './dtos/verify-otp.dto';
 
 @ApiController('auth', { auth: true })
 export class AuthController {
