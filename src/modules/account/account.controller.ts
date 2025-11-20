@@ -1,10 +1,11 @@
-import { Get, HttpStatus, Req } from '@nestjs/common';
+import { Body, Get, HttpStatus, Post, Param, Delete, Req } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { AccountService } from './account.service';
 import { AccountDto } from './dtos/account.dto';
+import { AdminCreateAccountDto } from './dtos/admin-create-account.dto';
 
 @ApiController('account', { auth: true })
 export class AccountController {
@@ -21,5 +22,24 @@ export class AccountController {
   async profile(@Req() req: any) {
     const account = await this.accountService.getAccountById(req.user.id);
     return new ApiResponse(account, 'Get profile successfully', HttpStatus.OK);
+  }
+
+  // ADMIN CREATE USER
+  @Post('admin/create')
+  @Permissions('ACC_C')
+  @ApiOperation({ summary: 'Admin create user account (no email verification required)' })
+  async adminCreateUser(
+    @Body() dto: AdminCreateAccountDto,
+  ): Promise<ApiResponse<{ message: string; account: AccountDto }>> {
+    const result = await this.accountService.adminCreateAccount(dto);
+    return new ApiResponse(result, 'User created by admin successfully', HttpStatus.CREATED);
+  }
+  // ADMIN DELETE USER
+  @Delete('delete/:id')
+  @Permissions('ACC_D')
+  @ApiOperation({ summary: 'Admin delete user account' })
+  async adminDeleteUser(@Param('id') id: string) {
+    await this.accountService.deleteAccount(Number(id));
+    return ApiResponse.successMessage('User deleted by admin successfully');
   }
 }

@@ -12,7 +12,9 @@ import { Group } from '../group/entities/group.entity';
 import { AccountMapper } from './account.mapper';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { AdminCreateAccountDto } from './dtos/admin-create-account.dto';
 import { Account } from './entities/account.entity';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class AccountService {
@@ -61,7 +63,7 @@ export class AccountService {
     // Gửi OTP qua email
     try {
       await this.emailService.sendOtpEmail(dto.email, otpCode, dto.fullName);
-    } catch (error) {
+    } catch {
       // Nếu gửi email thất bại, xóa tài khoản đã tạo
       await this.accountRepo.remove(saved);
       throw new BadRequestException('Failed to send OTP email. Please try again.');
@@ -131,7 +133,7 @@ export class AccountService {
     // Gửi OTP mới qua email
     try {
       await this.emailService.sendOtpEmail(dto.email, otpCode, account.fullName);
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Failed to send OTP email. Please try again.');
     }
 
@@ -266,5 +268,54 @@ export class AccountService {
     return {
       message: 'Password has been reset successfully. You can now login with your new password.',
     };
+  }
+
+  // ADMIN CREATE USER - Không cần verify email
+  async adminCreateAccount(
+    dto: AdminCreateAccountDto,
+  ): Promise<{ message: string; account: AccountDto }> {
+    // Kiểm tra username/email đã tồn tại
+    const existUser = await this.accountRepo.findOne({
+      where: [{ username: dto.username }, { email: dto.email }],
+    });
+    if (existUser) {
+      throw new BadRequestException('Username or email already exists');
+    }
+
+    // Tạo account entity
+    const account = AccountMapper.toEntityFromCreate(dto as CreateAccountDto);
+
+    // Gán group nếu có
+    if (dto.groupId) {
+      const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
+      if (!group) {
+        throw new BadRequestException('Group not found');
+      }
+      account.group = group;
+    }
+
+    // Admin tạo user → luôn active ngay lập tức
+    account.status = STATUS_ACTIVE;
+
+    // Không set OTP cho admin create
+    account.otpCode = null;
+    account.otpExpiresAt = null;
+
+    const savedAccount = await this.accountRepo.save(account);
+    const accountDto = AccountMapper.toResponse(savedAccount);
+
+    return {
+      message: 'User created successfully and activated',
+      account: accountDto,
+    };
+  }
+  // ADMIN DELETE account by id
+  async deleteAccount(id: number): Promise<{ message: string }> {
+    const account = await this.accountRepo.findOne({ where: { id } });
+    if (!account) {
+      throw new NotFoundException('Account not found');
+    }
+    await this.accountRepo.remove(account);
+    return { message: 'Account deleted successfully' };
   }
 }
