@@ -1,9 +1,9 @@
-import { Account } from './entities/account.entity';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { UpdateAccountDto } from './dtos/update-account.dto';
-import { AccountDto } from './dtos/account.dto';
 import { Group } from '../group/entities/group.entity';
 import { GroupMapper } from '../group/group.mapper';
+import { AccountDto } from './dtos/account.dto';
+import { CreateAccountDto } from './dtos/create-account.dto';
+import { UpdateAccountDto } from './dtos/update-account.dto';
+import { Account } from './entities/account.entity';
 
 export class AccountMapper {
   static toEntityFromCreate(dto: CreateAccountDto): Account {

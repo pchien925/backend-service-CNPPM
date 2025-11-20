@@ -1,17 +1,18 @@
+import { HttpStatus } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ApiResponse<T> {
   @ApiProperty({ default: true })
-  result: boolean;
+  result: boolean = true;
 
   @ApiPropertyOptional()
   data?: T;
 
-  @ApiProperty()
-  message: string;
+  @ApiProperty({ default: 'Success' })
+  message: string = 'Success';
 
-  @ApiPropertyOptional()
-  code?: string | number;
+  @ApiPropertyOptional({ default: HttpStatus.OK })
+  code?: string | number = HttpStatus.OK;
 
   constructor(data: T, message = '', code?: string | number, result = true) {
     this.data = data;
@@ -21,14 +22,21 @@ export class ApiResponse<T> {
   }
 
   static successMessage<T>(message = 'Success'): ApiResponse<T> {
-    return new ApiResponse<T>(null as any, message, undefined, true);
+    return new ApiResponse<T>(null as any, message, HttpStatus.OK, true);
   }
 
-  static success<T>(data: T, message = 'Success', code?: string | number): ApiResponse<T> {
+  static success<T>(
+    data: T,
+    message = 'Success',
+    code: string | number = HttpStatus.OK,
+  ): ApiResponse<T> {
     return new ApiResponse<T>(data, message, code, true);
   }
 
-  static fail<T>(message = 'Failed', code?: string | number): ApiResponse<T> {
+  static fail<T>(
+    message = 'Failed',
+    code: string | number = HttpStatus.BAD_REQUEST,
+  ): ApiResponse<T> {
     return new ApiResponse<T>(null as any, message, code, false);
   }
 }
