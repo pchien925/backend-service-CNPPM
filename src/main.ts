@@ -10,20 +10,18 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: false,
-      transform: false,
       forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
-    }),
-  );
-  app.useGlobalPipes(
-    new ValidationPipe({
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
         return new BadRequestException(
           validationErrors.map(error => ({
             field: error.property,
-            error: Object.values(error.constraints).join(', '),
+            error: error.constraints
+              ? Object.values(error.constraints).join(', ')
+              : 'Invalid value',
           })),
         );
       },

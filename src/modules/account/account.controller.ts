@@ -1,11 +1,11 @@
-import { Body, Get, HttpStatus, Post, Param, Delete, Req } from '@nestjs/common';
+import { Body, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Req } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { AccountService } from './account.service';
 import { AccountDto } from './dtos/account.dto';
-import { AdminCreateAccountDto } from './dtos/admin-create-account.dto';
+import { CreateAccountDto } from './dtos/create-account.dto';
 
 @ApiController('account', { auth: true })
 export class AccountController {
@@ -16,30 +16,28 @@ export class AccountController {
   @ApiOperation({ summary: 'Get all accounts' })
   async list(): Promise<ApiResponse<AccountDto[]>> {
     const accounts = await this.accountService.list();
-    return new ApiResponse(accounts, 'Get list accounts successfully', HttpStatus.OK);
+    return ApiResponse.success(accounts, 'Get list accounts successfully', HttpStatus.OK);
   }
   @Get('profile')
+  @ApiOperation({ summary: 'Get current account profile' })
   async profile(@Req() req: any) {
     const account = await this.accountService.getAccountById(req.user.id);
-    return new ApiResponse(account, 'Get profile successfully', HttpStatus.OK);
+    return ApiResponse.success(account, 'Get profile successfully', HttpStatus.OK);
   }
 
-  // ADMIN CREATE USER
-  @Post('admin/create')
+  @Post('create')
   @Permissions('ACC_C')
-  @ApiOperation({ summary: 'Admin create user account (no email verification required)' })
-  async adminCreateUser(
-    @Body() dto: AdminCreateAccountDto,
-  ): Promise<ApiResponse<{ message: string; account: AccountDto }>> {
-    const result = await this.accountService.adminCreateAccount(dto);
-    return new ApiResponse(result, 'User created by admin successfully', HttpStatus.CREATED);
+  @ApiOperation({ summary: 'Create user account' })
+  async create(@Body() dto: CreateAccountDto): Promise<ApiResponse<void>> {
+    await this.accountService.create(dto);
+    return ApiResponse.successMessage('User created successfully');
   }
-  // ADMIN DELETE USER
+
   @Delete('delete/:id')
   @Permissions('ACC_D')
-  @ApiOperation({ summary: 'Admin delete user account' })
-  async adminDeleteUser(@Param('id') id: string) {
-    await this.accountService.deleteAccount(Number(id));
-    return ApiResponse.successMessage('User deleted by admin successfully');
+  @ApiOperation({ summary: 'Delete user account' })
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<void>> {
+    await this.accountService.deleteAccount(id);
+    return ApiResponse.successMessage('User deleted successfully');
   }
 }
