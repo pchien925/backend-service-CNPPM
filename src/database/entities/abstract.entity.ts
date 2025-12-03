@@ -50,14 +50,14 @@ export abstract class Auditable<T> extends ReuseId {
   status: number = 1;
 
   //set up tạm defalt là admin
-  @BeforeInsert()
-  setCreatedBy() {
-    this.createdBy = this.createdBy || ('admin' as T);
-    this.modifiedBy = this.modifiedBy || ('admin' as T);
-  }
+  // @BeforeInsert()
+  // setCreatedBy() {
+  //   this.createdBy = this.createdBy || ('admin' as T);
+  //   this.modifiedBy = this.modifiedBy || ('admin' as T);
+  // }
 
-  @BeforeUpdate()
-  setModifiedBy() {
-    this.modifiedBy = this.modifiedBy || ('admin' as T);
-  }
+  // @BeforeUpdate()
+  // setModifiedBy() {
+  //   this.modifiedBy = this.modifiedBy || ('admin' as T);
+  // }
 }
