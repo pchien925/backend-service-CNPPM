@@ -1,11 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { STATUS_ACTIVE } from 'src/constants/app.constant';
+import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from 'src/exception/bad-request.exception';
+import { NotFoundException } from 'src/exception/not-found.exception';
+import { UnauthorizationException } from 'src/exception/unauthorization.exception';
 import { verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
 import { UserDetailsDto } from '../auth/dtos/user-details.dto';
@@ -34,7 +33,7 @@ export class AccountService {
     });
 
     if (!account) {
-      throw new NotFoundException('Tài khoản không tồn tại');
+      throw new NotFoundException('Tài khoản không tồn tại', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
     }
 
     return AccountMapper.toDetailResponse(account);
@@ -57,11 +56,14 @@ export class AccountService {
       ],
     });
     if (!account) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizationException('Invalid credentials', ErrorCode.AUTH_ERROR_UNAUTHORIZED);
     }
     const match = await verifyPassword(password, account.password);
     if (!match) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizationException(
+        'Invalid credentials',
+        ErrorCode.ACCOUNT_ERROR_INVALID_PASSWORD,
+      );
     }
 
     const authorities = (account.group?.permissions ?? [])
@@ -83,7 +85,10 @@ export class AccountService {
     });
 
     if (existUser) {
-      throw new BadRequestException('Username or email already exists');
+      throw new BadRequestException(
+        'Username or email already exists',
+        ErrorCode.ACCOUNT_ERROR_USERNAME_EXISTED,
+      );
     }
 
     const account = AccountMapper.toEntityFromCreate(dto);

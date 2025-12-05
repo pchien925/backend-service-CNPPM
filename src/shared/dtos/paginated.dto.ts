@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
 export class Paginated {
   @ApiPropertyOptional({
@@ -16,7 +16,6 @@ export class Paginated {
 
   @ApiPropertyOptional({
     minimum: 1,
-    maximum: 100,
     default: 10,
     description: 'Number of records per page',
   })
