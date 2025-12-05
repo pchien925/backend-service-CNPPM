@@ -1,7 +1,8 @@
-import { Entity, PrimaryColumn, Column, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryColumn, Column, BeforeInsert, OneToMany } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
+import { OptionValue } from './option-value.entity';
 
 @Entity({ name: 'tbl_option' })
 export class Option extends Auditable<string> {
@@ -14,6 +15,12 @@ export class Option extends Auditable<string> {
 
   @Column({ name: 'description', type: 'text', nullable: true })
   description?: string;
+
+  @OneToMany(() => OptionValue, value => value.option, {
+    cascade: ['insert', 'update'],
+    eager: false,
+  })
+  values?: OptionValue[];
 
   @BeforeInsert()
   generateId() {

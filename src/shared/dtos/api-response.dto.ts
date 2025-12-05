@@ -15,7 +15,9 @@ export class ApiResponse<T> {
   code?: string | number = HttpStatus.OK;
 
   constructor(data: T, message = '', code?: string | number, result = true) {
-    this.data = data;
+    if (data !== null && data !== undefined) {
+      this.data = data;
+    }
     this.message = message;
     this.code = code;
     this.result = result;
@@ -36,7 +38,8 @@ export class ApiResponse<T> {
   static fail<T>(
     message = 'Failed',
     code: string | number = HttpStatus.BAD_REQUEST,
+    data?: any,
   ): ApiResponse<T> {
-    return new ApiResponse<T>(null as any, message, code, false);
+    return new ApiResponse<T>(data as any, message, code, false);
   }
 }

@@ -2,7 +2,17 @@ import { IsNotEmpty } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { FoodTag } from './food-tag.entity';
+import { FoodOption } from './food-option.entity';
 
 @Entity({ name: 'tbl_food' })
 export class Food extends Auditable<string> {
@@ -31,6 +41,12 @@ export class Food extends Auditable<string> {
   @ManyToOne(() => Category)
   @JoinColumn({ name: 'category_id' })
   category!: Category;
+
+  @OneToMany(() => FoodTag, foodTag => foodTag.food)
+  foodTags?: FoodTag[];
+
+  @OneToMany(() => FoodOption, foodOption => foodOption.food)
+  foodOptions?: FoodOption[];
 
   @BeforeInsert()
   generateId() {

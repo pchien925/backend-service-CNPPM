@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupSwagger } from './configs/swagger.config';
 import { BadRequestException, ValidationError, ValidationPipe } from '@nestjs/common';
+import { GlobalExceptionFilter } from './exception/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
     origin: ['https://abc.com', 'http://localhost:3000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

@@ -1,7 +1,15 @@
 import { IsInt, IsNotEmpty } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 
 @Entity({ name: 'tbl_category' })
 export class Category extends Auditable<string> {
@@ -25,9 +33,15 @@ export class Category extends Auditable<string> {
   @Column({ name: 'ordering', type: 'int', default: 0 })
   ordering!: number;
 
-  @ManyToOne(() => Category, { nullable: true })
+  @ManyToOne(() => Category, category => category.children, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'parent_id' })
   parent?: Category;
+
+  @OneToMany(() => Category, category => category.parent)
+  children?: Category[];
 
   @BeforeInsert()
   generateId() {

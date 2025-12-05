@@ -22,9 +22,9 @@ export class OptionValue extends Auditable<string> {
   @Column({ name: 'ordering', type: 'int', default: 0 })
   ordering!: number;
 
-  @ManyToOne(() => Option, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Option, option => option.values, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'option_id' })
-  option!: Option;
+  option?: Option;
 
   @BeforeInsert()
   generateId() {

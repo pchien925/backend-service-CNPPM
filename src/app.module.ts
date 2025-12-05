@@ -14,6 +14,11 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditSubscriber } from './common/subscribers/audit.subscriber';
 import { ClsModule } from 'nestjs-cls';
 import { UserContextInterceptor } from './common/interceptors/user-context.interceptor';
+import { OptionModule } from './modules/option/option.module';
+import { OptionValueModule } from './modules/option/option-value.module';
+import { CategoryModule } from './modules/category/category.module';
+import { TagModule } from './modules/tag/tag.module';
+import { FoodModule } from './modules/food/food.module';
 
 @Module({
   imports: [
@@ -31,6 +36,11 @@ import { UserContextInterceptor } from './common/interceptors/user-context.inter
     GroupModule,
     PermissionModule,
     AuthModule,
+    OptionModule,
+    OptionValueModule,
+    CategoryModule,
+    TagModule,
+    FoodModule,
   ],
   providers: [
     {
