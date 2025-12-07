@@ -1,4 +1,3 @@
-import { IsNotEmpty } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
@@ -11,8 +10,8 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { FoodTag } from './food-tag.entity';
 import { FoodOption } from './food-option.entity';
+import { FoodTag } from './food-tag.entity';
 
 @Entity({ name: 'tbl_food' })
 export class Food extends Auditable<string> {
@@ -20,7 +19,6 @@ export class Food extends Auditable<string> {
   id!: number;
 
   @Column({ name: 'name', length: 255 })
-  @IsNotEmpty()
   name!: string;
 
   @Column({ name: 'description', type: 'text', nullable: true })

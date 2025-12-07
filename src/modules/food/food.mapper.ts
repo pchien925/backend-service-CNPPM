@@ -57,4 +57,20 @@ export class FoodMapper {
       options: entity.foodOptions ? entity.foodOptions.map(this.toFoodOptionDetailDto) : [],
     };
   }
+
+  static toFoodListResponse(entity: Food): FoodDto {
+    return {
+      id: entity.id,
+      name: entity.name,
+      description: entity.description ?? null,
+      basePrice: Number(entity.basePrice),
+      imageUrl: entity.imageUrl ?? null,
+      cookingTime: entity.cookingTime ?? null,
+      ordering: entity.ordering,
+      status: entity.status,
+      category: CategoryMapper.toResponse(entity.category),
+      tags: [],
+      options: [],
+    };
+  }
 }

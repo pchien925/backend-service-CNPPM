@@ -5,7 +5,7 @@ export class FoodOptionPayloadDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsInt()
-  optionId!: number;
+  id!: number;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()

@@ -1,19 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { Food } from './entities/food.entity';
-import { FoodTag } from './entities/food-tag.entity';
-import { FoodOption } from './entities/food-option.entity';
-import { Category } from 'src/modules/category/entities/category.entity';
-import { Tag } from 'src/modules/tag/entities/tag.entity';
-import { Option } from 'src/modules/option/entities/option.entity';
-import { CreateFoodDto } from './dtos/create-food.dto';
-import { UpdateFoodDto } from './dtos/update-food.dto';
-import { FoodDto } from './dtos/food.dto';
-import { FoodMapper } from './food.mapper';
+import {
+  STATUS_ACTIVE,
+  STATUS_DELETE,
+  STATUS_INACTIVE,
+  STATUS_PENDING,
+} from 'src/constants/app.constant';
+import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
-import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
+import { Category } from 'src/modules/category/entities/category.entity';
+import { Option } from 'src/modules/option/entities/option.entity';
+import { Tag } from 'src/modules/tag/entities/tag.entity';
+import { In, Repository } from 'typeorm';
+import { CreateFoodDto } from './dtos/create-food.dto';
 import { FoodOptionPayloadDto } from './dtos/food-option-payload.dto';
+import { FoodQueryDto } from './dtos/food-query.dto';
+import { FoodDto } from './dtos/food.dto';
+import { UpdateFoodDto } from './dtos/update-food.dto';
+import { FoodOption } from './entities/food-option.entity';
+import { FoodTag } from './entities/food-tag.entity';
+import { Food } from './entities/food.entity';
+import { FoodMapper } from './food.mapper';
+import { FoodSpecification } from './specification/food.specification';
 
 @Injectable()
 export class FoodService {
@@ -32,17 +41,18 @@ export class FoodService {
     private readonly optionRepo: Repository<Option>,
   ) {}
 
-  // ==================== CREATE ====================
   async create(dto: CreateFoodDto): Promise<void> {
     const { categoryId, tagIds, options, ...foodData } = dto;
 
+    // 0. validate
+    this.validateDuplicateIds(tagIds, options);
     // 1. Kiểm tra Category
     const category = await this.categoryRepo.findOneBy({
       id: categoryId,
       status: STATUS_ACTIVE,
     });
     if (!category) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found.`);
+      throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
     }
 
     // 2. Tạo Food Entity
@@ -61,40 +71,38 @@ export class FoodService {
     }
   }
 
-  // ==================== READ ====================
   async findOne(id: number): Promise<FoodDto> {
     const food = await this.foodRepo.findOne({
-      where: { id, status: In([STATUS_ACTIVE]) },
-      // Đảm bảo tải Category, Tag và Option để ánh xạ chi tiết
+      where: { id, status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]) },
       relations: ['category', 'foodTags.tag', 'foodOptions.option'],
     });
 
     if (!food) {
-      throw new NotFoundException(`Food with ID ${id} not found.`);
+      throw new NotFoundException(`Food not found.`, ErrorCode.FOOD_ERROR_NOT_FOUND);
     }
 
     return FoodMapper.toResponse(food);
   }
 
-  // ==================== UPDATE ====================
   async update(dto: UpdateFoodDto): Promise<void> {
     const { id, tagIds, options, categoryId, ...updateData } = dto;
 
-    // Tải Food kèm theo các quan hệ hiện tại để đồng bộ hóa
+    // 0. validate
+    this.validateDuplicateIds(tagIds, options);
     const foodEntity = await this.foodRepo.findOne({
       where: { id, status: In([STATUS_ACTIVE]) },
       relations: ['category', 'foodTags.tag', 'foodOptions.option'],
     });
 
     if (!foodEntity) {
-      throw new NotFoundException(`Food with ID ${id} not found.`);
+      throw new NotFoundException(`Food not found.`, ErrorCode.FOOD_ERROR_NOT_FOUND);
     }
 
     let category: Category | undefined;
     if (categoryId !== undefined) {
       category = await this.categoryRepo.findOneBy({ id: categoryId, status: STATUS_ACTIVE });
       if (!category) {
-        throw new NotFoundException(`Category with ID ${categoryId} not found.`);
+        throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
       }
     }
 
@@ -116,18 +124,58 @@ export class FoodService {
     }
   }
 
-  // ==================== DELETE ====================
+  async findAll(query: FoodQueryDto): Promise<FoodDto[]> {
+    const { page = 1, limit = 10 } = query;
+
+    const filterSpec = new FoodSpecification(query);
+    const where = filterSpec.toWhere();
+
+    const foods = await this.foodRepo.find({
+      where,
+      relations: ['category'],
+      order: { id: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return foods.map(food => FoodMapper.toFoodListResponse(food));
+  }
+
   async delete(id: number): Promise<void> {
-    // Soft Delete
     const result = await this.foodRepo.update({ id }, { status: STATUS_DELETE });
 
     if (result.affected === 0) {
-      throw new NotFoundException(`Food with ID ${id} not found.`);
+      throw new NotFoundException(`Food not found.`, ErrorCode.FOOD_ERROR_NOT_FOUND);
     }
   }
 
-  // ==================== LOGIC ĐỒNG BỘ HÓA ====================
+  // ==================== Hàm kiểm tra trùng lặp ID ====================
+  private validateDuplicateIds(
+    tagIds: number[] | undefined,
+    options: FoodOptionPayloadDto[] | undefined,
+  ): void {
+    if (tagIds && tagIds.length > 0) {
+      const uniqueTagIds = new Set(tagIds);
+      if (uniqueTagIds.size !== tagIds.length) {
+        throw new BadRequestException(
+          'Duplicate Tag IDs found in the request.',
+          ErrorCode.FOOD_ERROR_TAG_DUPLICATE,
+        );
+      }
+    }
 
+    if (options && options.length > 0) {
+      const optionIds = options.map(opt => opt.id);
+      const uniqueOptionIds = new Set(optionIds);
+      if (uniqueOptionIds.size !== optionIds.length) {
+        throw new BadRequestException(
+          'Duplicate Option IDs found in the request.',
+          ErrorCode.FOOD_ERROR_OPTION_DUPLICATE,
+        );
+      }
+    }
+  }
+  // ==================== LOGIC ĐỒNG BỘ HÓA ====================
   /**
    * Đồng bộ hóa FoodTags: Thêm mới các Tag ID chưa có, Xóa các Tag ID đã bị loại bỏ.
    */
@@ -178,7 +226,7 @@ export class FoodService {
 
     // Duyệt qua Options mới:
     for (const newOpt of newOptions) {
-      const currentFo = optionIdsMap.get(newOpt.optionId);
+      const currentFo = optionIdsMap.get(newOpt.id);
 
       const newOrdering = newOpt.ordering ?? 0;
       const newRequirementType = newOpt.requirementType ?? 1;
@@ -206,7 +254,7 @@ export class FoodService {
       } else {
         // Chưa tồn tại: CREATE
         const option = await this.optionRepo.findOneBy({
-          id: newOpt.optionId,
+          id: newOpt.id,
           status: STATUS_ACTIVE,
         });
         if (option) {
