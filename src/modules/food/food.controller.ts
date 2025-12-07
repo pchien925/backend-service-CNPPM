@@ -1,9 +1,10 @@
-import { Body, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
 import { CreateFoodDto } from './dtos/create-food.dto';
+import { FoodQueryDto } from './dtos/food-query.dto';
 import { FoodDto } from './dtos/food.dto';
 import { UpdateFoodDto } from './dtos/update-food.dto';
 import { FoodService } from './food.service';
@@ -13,12 +14,20 @@ import { FoodService } from './food.service';
 export class FoodController {
   constructor(private readonly foodService: FoodService) {}
 
-  @Post()
+  @Post('/create')
   @Permissions('FOOD_C')
   @ApiOperation({ summary: 'Create new food item with tags and options' })
   async create(@Body() dto: CreateFoodDto): Promise<ApiResponse<void>> {
     await this.foodService.create(dto);
     return ApiResponse.successMessage('Food created successfully');
+  }
+
+  @Get('/list')
+  @Permissions('FOOD_L')
+  @ApiOperation({ summary: 'Get list of Foods with filtering and pagination' })
+  async findAll(@Query() query: FoodQueryDto): Promise<ApiResponse<FoodDto[]>> {
+    const foods = await this.foodService.findAll(query);
+    return ApiResponse.success(foods, 'Get list Foods successfully');
   }
 
   @Get(':id')
@@ -29,7 +38,7 @@ export class FoodController {
     return ApiResponse.success(food, 'Get food detail successfully');
   }
 
-  @Put()
+  @Put('/update')
   @Permissions('FOOD_U')
   @ApiOperation({ summary: 'Update an existing food item (tags and options are synchronized)' })
   async update(@Body() dto: UpdateFoodDto): Promise<ApiResponse<void>> {

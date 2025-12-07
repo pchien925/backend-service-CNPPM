@@ -1,8 +1,7 @@
 import { BaseSpecification } from 'src/shared/specification/base.specification';
-import { FindOptionsWhere, ILike, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { And, FindOptionsWhere, ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { FoodQueryDto } from '../dtos/food-query.dto';
 import { Food } from '../entities/food.entity';
-import { STATUS_ACTIVE } from 'src/constants/app.constant';
 
 export class FoodSpecification extends BaseSpecification<Food> {
   private readonly query: FoodQueryDto;
@@ -14,36 +13,36 @@ export class FoodSpecification extends BaseSpecification<Food> {
 
   public toWhere(): FindOptionsWhere<Food> {
     const where: FindOptionsWhere<Food> = {};
-    const { name, categoryId, status, minCookingTime, minPrice, maxPrice } = this.query;
+    const { name, categoryId, status, minPrice, maxPrice } = this.query;
 
-    // Filter by name (Fuzzy search)
+    // Lọc theo tên
     if (name) {
       where.name = ILike(`%${name}%`);
     }
 
-    // Filter by category ID
-    if (categoryId !== undefined) {
-      where.category = { id: categoryId };
+    // Lọc theo Category ID (Sử dụng quan hệ)
+    if (categoryId) {
+      // Giả sử Food entity có mối quan hệ Category
+      (where as any).category = { id: categoryId };
     }
 
-    if (minCookingTime !== undefined) {
-      where.cookingTime = MoreThanOrEqual(minCookingTime);
-    }
-
-    if (minPrice !== undefined && maxPrice !== undefined) {
-      where.basePrice = Between(minPrice, maxPrice);
-    } else if (minPrice !== undefined) {
-      where.basePrice = MoreThanOrEqual(minPrice);
-    } else if (maxPrice !== undefined) {
-      where.basePrice = LessThanOrEqual(maxPrice);
-    }
-
-    // Filter by status
+    // Lọc theo Status (Mặc định là ACTIVE nếu không truyền)
     if (status !== undefined) {
       where.status = status;
     } else {
-      where.status = STATUS_ACTIVE;
+      where.status = 1; // STATUS_ACTIVE
     }
+    const hasValidMinPrice = minPrice !== undefined && !isNaN(minPrice);
+    const hasValidMaxPrice = maxPrice !== undefined && !isNaN(maxPrice);
+
+    if (hasValidMinPrice && hasValidMaxPrice) {
+      where.basePrice = And(MoreThanOrEqual(minPrice), LessThanOrEqual(maxPrice));
+    } else if (hasValidMinPrice) {
+      where.basePrice = MoreThanOrEqual(minPrice);
+    } else if (hasValidMaxPrice) {
+      where.basePrice = LessThanOrEqual(maxPrice);
+    }
+
     return where;
   }
 }
