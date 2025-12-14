@@ -36,7 +36,7 @@ export class OptionController {
   @Get(':id')
   @Permissions('OPT_V')
   @ApiOperation({ summary: 'Get option detail (with values)' })
-  async findOne(@Param('id') id: number): Promise<ApiResponse<OptionDto>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponse<OptionDto>> {
     const option = await this.optionService.findOne(id);
     return ApiResponse.success(option, 'Get option detail successfully');
   }
@@ -52,7 +52,7 @@ export class OptionController {
   @Delete(':id')
   @Permissions('OPT_D')
   @ApiOperation({ summary: 'Delete an option (soft delete)' })
-  async delete(@Param('id') id: number): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.optionService.delete(id);
     return ApiResponse.successMessage('Option deleted successfully');
   }

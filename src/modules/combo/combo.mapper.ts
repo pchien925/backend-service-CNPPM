@@ -1,5 +1,4 @@
 import { CategoryMapper } from 'src/modules/category/category.mapper';
-import { Category } from 'src/modules/category/entities/category.entity'; // Import Category Entity
 import { TagMapper } from 'src/modules/tag/tag.mapper';
 import { ComboDto } from './dtos/combo.dto';
 import { CreateComboDto } from './dtos/create-combo.dto';
@@ -16,14 +15,6 @@ export class ComboMapper {
     entity.cookingTime = dto.cookingTime;
     entity.ordering = dto.ordering ?? 0;
 
-    // ⭐ SỬA ĐỔI: Thiết lập quan hệ Category
-    if (dto.categoryId) {
-      // Tạo Category Entity giả để thiết lập FK qua mối quan hệ
-      const categoryEntity = new Category();
-      categoryEntity.id = dto.categoryId;
-      entity.category = categoryEntity;
-    }
-
     return entity;
   }
 
@@ -35,14 +26,6 @@ export class ComboMapper {
     if (dto.cookingTime !== undefined) entity.cookingTime = dto.cookingTime;
     if (dto.ordering !== undefined) entity.ordering = dto.ordering;
     if (dto.status !== undefined) entity.status = dto.status;
-
-    if (dto.categoryId !== undefined) {
-      const categoryEntity = new Category();
-      categoryEntity.id = dto.categoryId;
-      entity.category = categoryEntity;
-    }
-
-    // Lưu ý: Status update logic (nếu có)
 
     return entity;
   }

@@ -4,8 +4,8 @@ import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class UpdateOptionDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'ID cannot be null' })
-  @IsInt()
-  id!: number;
+  @IsString()
+  id!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

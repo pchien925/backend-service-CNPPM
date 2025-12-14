@@ -71,7 +71,7 @@ export class OptionValueService {
     return OptionValueMapper.toResponseList(entities);
   }
 
-  async findOne(id: number): Promise<OptionValueDto> {
+  async findOne(id: string): Promise<OptionValueDto> {
     const entity = await this.optionValueRepo.findOneBy({
       id,
       status: Not(STATUS_DELETE),
@@ -116,7 +116,7 @@ export class OptionValueService {
     await this.optionValueRepo.save(updatedEntity);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     const result = await this.optionValueRepo.update({ id }, { status: STATUS_DELETE });
 
     if (result.affected === 0) {

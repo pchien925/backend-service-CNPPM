@@ -6,10 +6,9 @@ import { Paginated } from 'src/shared/dtos/paginated.dto';
 export class OptionValueQueryDto extends Paginated {
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   @Min(1)
-  @Type(() => Number)
-  optionId!: number;
+  optionId!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

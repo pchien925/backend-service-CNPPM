@@ -15,8 +15,8 @@ import { FoodTag } from './food-tag.entity';
 
 @Entity({ name: 'tbl_food' })
 export class Food extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', length: 255 })
   name!: string;

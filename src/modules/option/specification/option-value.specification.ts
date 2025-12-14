@@ -1,8 +1,8 @@
+import { STATUS_ACTIVE } from 'src/constants/app.constant';
 import { BaseSpecification } from 'src/shared/specification/base.specification';
 import { FindOptionsWhere, ILike } from 'typeorm';
 import { OptionValueQueryDto } from '../dtos/option-value-query.dto';
 import { OptionValue } from '../entities/option-value.entity';
-import { STATUS_ACTIVE } from 'src/constants/app.constant';
 
 export class OptionValueSpecification extends BaseSpecification<OptionValue> {
   private readonly query: OptionValueQueryDto;

@@ -1,4 +1,4 @@
-import { Body, Delete, Get, Param, Post, Put, Query, ParseIntPipe } from '@nestjs/common';
+import { Body, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
@@ -14,16 +14,16 @@ import { UpdateComboDto } from './dtos/update-combo.dto';
 export class ComboController {
   constructor(private readonly comboService: ComboService) {}
 
-  @Post()
-  @Permissions('COMBO_C')
+  @Post('create')
+  @Permissions('COM_C')
   @ApiOperation({ summary: 'Create new combo' })
   async create(@Body() dto: CreateComboDto): Promise<ApiResponse<void>> {
     await this.comboService.create(dto);
     return ApiResponse.successMessage('Combo created successfully');
   }
 
-  @Get()
-  @Permissions('COMBO_L')
+  @Get('list')
+  @Permissions('COM_L')
   @ApiOperation({ summary: 'Get list of combos (with filtering and pagination)' })
   async findAll(@Query() query: ComboQueryDto): Promise<ApiResponse<ComboDto[]>> {
     const combos = await this.comboService.findAll(query);
@@ -31,15 +31,15 @@ export class ComboController {
   }
 
   @Get(':id')
-  @Permissions('COMBO_V')
+  @Permissions('COM_V')
   @ApiOperation({ summary: 'Get combo detail' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<ComboDto>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponse<ComboDto>> {
     const combo = await this.comboService.findOne(id);
     return ApiResponse.success(combo, 'Get combo detail successfully');
   }
 
-  @Put()
-  @Permissions('COMBO_U')
+  @Put('update')
+  @Permissions('COM_U')
   @ApiOperation({ summary: 'Update an existing combo' })
   async update(@Body() dto: UpdateComboDto): Promise<ApiResponse<void>> {
     await this.comboService.update(dto);
@@ -47,9 +47,9 @@ export class ComboController {
   }
 
   @Delete(':id')
-  @Permissions('COMBO_D')
+  @Permissions('COM_D')
   @ApiOperation({ summary: 'Delete a combo (soft delete)' })
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.comboService.delete(id);
     return ApiResponse.successMessage('Combo deleted successfully');
   }

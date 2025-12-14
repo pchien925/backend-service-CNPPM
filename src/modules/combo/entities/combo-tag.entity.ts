@@ -6,8 +6,8 @@ import { Tag } from 'src/modules/tag/entities/tag.entity';
 
 @Entity({ name: 'tbl_combo_tag' })
 export class ComboTag extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @ManyToOne(() => Combo, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'combo_id' })

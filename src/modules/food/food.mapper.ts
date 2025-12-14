@@ -73,7 +73,7 @@ export class FoodMapper {
       ordering: entity.ordering,
       status: entity.status,
       category: CategoryMapper.toResponse(entity.category),
-      tags: [],
+      tags: entity.foodTags ? entity.foodTags.map(tag => TagMapper.toResponse(tag.tag)) : [],
       options: [],
     };
   }

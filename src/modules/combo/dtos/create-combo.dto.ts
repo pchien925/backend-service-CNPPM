@@ -33,13 +33,13 @@ export class CreateComboDto {
   ordering?: number;
 
   @ApiProperty()
-  @IsInt({ message: 'Category ID must be an integer' })
+  @IsString({ message: 'Category ID must be a string' })
   @IsNotEmpty({ message: 'Category ID is required' })
-  categoryId!: number;
+  categoryId!: string;
 
-  @ApiPropertyOptional({ type: [Number] })
+  @ApiPropertyOptional({ type: [String] })
   @IsArray({ message: 'Tag IDs must be an array' })
-  @IsInt({ each: true, message: 'Each tag ID must be an integer' })
+  @IsString({ each: true, message: 'Each tag ID must be a string' })
   @IsOptional()
-  tagIds?: number[];
+  tagIds?: string[];
 }

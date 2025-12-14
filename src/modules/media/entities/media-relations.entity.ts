@@ -6,8 +6,8 @@ import { Media } from './media.entity';
 
 @Entity({ name: 'tbl_media_relations' })
 export class MediaRelations extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   // ManyToOne relationship to Media
   @ManyToOne(() => Media, { onDelete: 'CASCADE' })
@@ -20,7 +20,7 @@ export class MediaRelations extends Auditable<string> {
     comment: 'ID of the related Entity (Food ID, Combo ID, etc.)',
   })
   @IsNotEmpty({ message: 'Related ID is required' })
-  relatedId!: number;
+  relatedId!: string;
 
   @Column({
     name: 'related_type',

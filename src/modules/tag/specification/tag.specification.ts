@@ -1,3 +1,4 @@
+import { STATUS_ACTIVE } from 'src/constants/app.constant';
 import { BaseSpecification } from 'src/shared/specification/base.specification';
 import { FindOptionsWhere, ILike } from 'typeorm';
 import { TagQueryDto } from '../dtos/tag-query.dto';
@@ -23,7 +24,7 @@ export class TagSpecification extends BaseSpecification<Tag> {
     if (status !== undefined) {
       where.status = status;
     } else {
-      where.status = 1;
+      where.status = STATUS_ACTIVE;
     }
 
     return where;

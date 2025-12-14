@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PermissionDto {
   @ApiProperty()
-  id: number;
+  id: string;
 
   @ApiProperty()
   name: string;

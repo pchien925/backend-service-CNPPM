@@ -33,7 +33,7 @@ export class TagController {
   @Get(':id')
   @Permissions('TAG_V')
   @ApiOperation({ summary: 'Get Tag detail' })
-  async findOne(@Param('id') id: number): Promise<ApiResponse<TagDto>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponse<TagDto>> {
     const tag = await this.tagService.findOne(id);
     return ApiResponse.success(tag, 'Get Tag detail successfully');
   }
@@ -49,7 +49,7 @@ export class TagController {
   @Delete(':id')
   @Permissions('TAG_D')
   @ApiOperation({ summary: 'Delete a Tag (soft delete)' })
-  async delete(@Param('id') id: number): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.tagService.delete(id);
     return ApiResponse.successMessage('Tag deleted successfully');
   }

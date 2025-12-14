@@ -6,8 +6,8 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } fr
 
 @Entity({ name: 'tbl_payment' })
 export class Payment extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({
     name: 'refund_by',

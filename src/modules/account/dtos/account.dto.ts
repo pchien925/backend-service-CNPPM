@@ -1,7 +1,7 @@
 import { GroupDto } from 'src/modules/group/dtos/group.dto';
 
 export class AccountDto {
-  id: number;
+  id: string;
   username: string;
   email: string;
   phone?: string;

@@ -6,8 +6,8 @@ import { Food } from './food.entity';
 
 @Entity({ name: 'tbl_food_tag' })
 export class FoodTag extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @ManyToOne(() => Food, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'food_id' })

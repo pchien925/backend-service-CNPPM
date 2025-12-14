@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Paginated } from 'src/shared/dtos/paginated.dto';
 
 export class OptionQueryDto extends Paginated {
@@ -8,4 +8,9 @@ export class OptionQueryDto extends Paginated {
   @IsString({ message: 'Name must be a string' })
   @IsNotEmpty({ message: 'Name cannot be empty if provided' })
   name?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by status (1: Active, 0: Inactive)' })
+  @IsInt({ message: 'Status must be an integer' })
+  @IsOptional()
+  status?: number;
 }

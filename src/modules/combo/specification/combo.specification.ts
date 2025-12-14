@@ -1,8 +1,8 @@
-import { BaseSpecification } from 'src/shared/specification/base.specification';
-import { Between, FindOptionsWhere, ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import { Combo } from '../entities/combo.entity';
-import { ComboQueryDto } from '../dtos/combo-query.dto';
 import { STATUS_ACTIVE } from 'src/constants/app.constant';
+import { BaseSpecification } from 'src/shared/specification/base.specification';
+import { And, FindOptionsWhere, ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { ComboQueryDto } from '../dtos/combo-query.dto';
+import { Combo } from '../entities/combo.entity';
 
 export class ComboSpecification extends BaseSpecification<Combo> {
   private readonly query: ComboQueryDto;
@@ -32,11 +32,14 @@ export class ComboSpecification extends BaseSpecification<Combo> {
       where.status = STATUS_ACTIVE;
     }
 
-    if (minPrice !== undefined && maxPrice !== undefined) {
-      where.basePrice = Between(minPrice, maxPrice);
-    } else if (minPrice !== undefined) {
+    const hasValidMinPrice = minPrice !== undefined && !isNaN(minPrice);
+    const hasValidMaxPrice = maxPrice !== undefined && !isNaN(maxPrice);
+
+    if (hasValidMinPrice && hasValidMaxPrice) {
+      where.basePrice = And(MoreThanOrEqual(minPrice), LessThanOrEqual(maxPrice));
+    } else if (hasValidMinPrice) {
       where.basePrice = MoreThanOrEqual(minPrice);
-    } else if (maxPrice !== undefined) {
+    } else if (hasValidMaxPrice) {
       where.basePrice = LessThanOrEqual(maxPrice);
     }
 

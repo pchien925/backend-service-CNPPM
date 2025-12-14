@@ -6,8 +6,8 @@ import { Option } from 'src/modules/option/entities/option.entity';
 
 @Entity({ name: 'tbl_food_option' })
 export class FoodOption extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'ordering', type: 'int', default: 0 })
   ordering!: number;

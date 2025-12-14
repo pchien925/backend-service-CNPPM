@@ -4,8 +4,8 @@ import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-va
 export class UpdateOptionValueDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'ID cannot be null' })
-  @IsInt()
-  id!: number;
+  @IsString()
+  id!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

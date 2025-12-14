@@ -1,7 +1,7 @@
 import { PermissionDto } from 'src/modules/permission/dtos/permission.dto';
 
 export class GroupDto {
-  id: number;
+  id: string;
   name: string;
   description: string | null;
   kind: number;

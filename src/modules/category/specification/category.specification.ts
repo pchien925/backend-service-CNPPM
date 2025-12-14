@@ -17,12 +17,8 @@ export class CategorySpecification extends BaseSpecification<Category> {
     const { parentId, name, kind, status } = this.query;
 
     // Filter by parent ID
-    if (parentId !== undefined) {
-      if (parentId === 0) {
-        where.parent = null;
-      } else {
-        where.parent = { id: parentId };
-      }
+    if (parentId !== undefined || parentId !== null) {
+      where.parent = { id: parentId };
     }
 
     // Filter by name

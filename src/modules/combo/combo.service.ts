@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  STATUS_ACTIVE,
-  STATUS_DELETE,
-  STATUS_INACTIVE,
-  STATUS_PENDING,
-} from 'src/constants/app.constant';
+import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
@@ -15,11 +10,11 @@ import { DataSource, EntityManager, ILike, In, Not, Repository } from 'typeorm';
 import { ComboMapper } from './combo.mapper';
 import { ComboQueryDto } from './dtos/combo-query.dto';
 import { ComboDto } from './dtos/combo.dto';
-import { Combo } from './entities/combo.entity';
-import { ComboTag } from './entities/combo-tag.entity';
 import { CreateComboDto } from './dtos/create-combo.dto';
-import { ComboSpecification } from './specification/combo.specification';
 import { UpdateComboDto } from './dtos/update-combo.dto';
+import { ComboTag } from './entities/combo-tag.entity';
+import { Combo } from './entities/combo.entity';
+import { ComboSpecification } from './specification/combo.specification';
 
 @Injectable()
 export class ComboService {
@@ -93,7 +88,7 @@ export class ComboService {
     return ComboMapper.toResponseList(entities);
   }
 
-  async findOne(id: number): Promise<ComboDto> {
+  async findOne(id: string): Promise<ComboDto> {
     const entity = await this.comboRepo.findOne({
       where: { id, status: Not(STATUS_DELETE) },
       relations: ['category', 'comboTags.tag'],
@@ -169,7 +164,7 @@ export class ComboService {
     });
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     const comboToDelete = await this.comboRepo.findOneBy({ id, status: Not(STATUS_DELETE) });
 
     if (!comboToDelete) {
@@ -181,7 +176,7 @@ export class ComboService {
 
   private async syncComboTags(
     combo: Combo,
-    newTagIds: number[],
+    newTagIds: string[],
     manager: EntityManager,
   ): Promise<void> {
     const comboTagRepo = manager.getRepository(ComboTag);

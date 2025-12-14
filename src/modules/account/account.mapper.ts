@@ -11,7 +11,6 @@ export class AccountMapper {
     entity.kind = dto.kind;
     entity.username = dto.username;
     entity.email = dto.email;
-    entity.password = dto.password;
     entity.fullName = dto.fullName;
     entity.phone = dto.phone;
     entity.avatarPath = dto.avatarPath;
@@ -24,7 +23,6 @@ export class AccountMapper {
   static toEntityFromUpdate(entity: Account, dto: UpdateAccountDto): Account {
     if (dto.username !== undefined) entity.username = dto.username;
     if (dto.email !== undefined) entity.email = dto.email;
-    if (dto.password !== undefined) entity.password = dto.password;
     if (dto.fullName !== undefined) entity.fullName = dto.fullName;
     if (dto.phone !== undefined) entity.phone = dto.phone;
     if (dto.avatarPath !== undefined) entity.avatarPath = dto.avatarPath;

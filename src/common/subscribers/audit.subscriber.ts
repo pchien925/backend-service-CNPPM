@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ClsService } from 'nestjs-cls';
 import { Auditable } from 'src/database/entities/abstract.entity';
+import { UserContextHelper } from 'src/shared/context/user-context.helper';
 import {
   DataSource,
   EntitySubscriberInterface,
@@ -12,10 +12,7 @@ import {
 @Injectable()
 @EventSubscriber()
 export class AuditSubscriber implements EntitySubscriberInterface<Auditable<any>> {
-  constructor(
-    dataSource: DataSource,
-    private readonly cls: ClsService,
-  ) {
+  constructor(dataSource: DataSource) {
     dataSource.subscribers.push(this);
   }
 
@@ -24,8 +21,7 @@ export class AuditSubscriber implements EntitySubscriberInterface<Auditable<any>
   }
 
   beforeInsert(event: InsertEvent<Auditable<any>>) {
-    const user = this.cls.get('user');
-    const username = user ? user.username : 'system';
+    const username = UserContextHelper.getUsername() ?? 'system';
 
     if (!event.entity.createdBy) {
       event.entity.createdBy = username;
@@ -36,8 +32,7 @@ export class AuditSubscriber implements EntitySubscriberInterface<Auditable<any>
   }
 
   beforeUpdate(event: UpdateEvent<Auditable<any>>) {
-    const user = this.cls.get('user');
-    const username = user ? user.username : 'system';
+    const username = UserContextHelper.getUsername() ?? 'system';
 
     event.entity.modifiedBy = username;
   }

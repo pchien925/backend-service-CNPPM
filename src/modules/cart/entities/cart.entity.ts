@@ -5,8 +5,8 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } fr
 
 @Entity({ name: 'tbl_cart' })
 export class Cart extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'total_price', type: 'decimal', precision: 10, scale: 2, default: 0 })
   totalPrice!: number;

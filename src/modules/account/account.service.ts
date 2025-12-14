@@ -5,7 +5,7 @@ import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
 import { UnauthorizationException } from 'src/exception/unauthorization.exception';
-import { verifyPassword } from 'src/utils';
+import { hashPassword, verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
 import { UserDetailsDto } from '../auth/dtos/user-details.dto';
 import { Group } from '../group/entities/group.entity';
@@ -26,7 +26,7 @@ export class AccountService {
     return AccountMapper.toResponseList(accounts);
   }
 
-  async getAccountById(id: number): Promise<AccountDto> {
+  async getAccountById(id: string): Promise<AccountDto> {
     const account = await this.accountRepo.findOne({
       where: { id: id },
       relations: ['group', 'group.permissions'],
@@ -100,6 +100,7 @@ export class AccountService {
     account.group = group;
 
     account.status = STATUS_ACTIVE;
+    account.password = await hashPassword(dto.password);
 
     account.otpCode = null;
     account.otpExpiresAt = null;
@@ -107,7 +108,7 @@ export class AccountService {
     await this.accountRepo.save(account);
   }
 
-  async deleteAccount(id: number): Promise<void> {
+  async deleteAccount(id: string): Promise<void> {
     const account = await this.accountRepo.findOne({ where: { id } });
     if (!account) {
       throw new NotFoundException('Account not found');

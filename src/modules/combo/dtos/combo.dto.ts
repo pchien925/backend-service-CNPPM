@@ -4,7 +4,7 @@ import { TagDto } from 'src/modules/tag/dtos/tag.dto';
 
 export class ComboDto {
   @ApiProperty()
-  id!: number;
+  id!: string;
 
   @ApiProperty()
   name!: string;

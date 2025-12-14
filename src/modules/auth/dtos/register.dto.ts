@@ -35,6 +35,6 @@ export class RegisterDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsInt({ message: 'groupId must be an integer' })
-  groupId?: number;
+  @IsString({ message: 'groupId must be a string' })
+  groupId?: string;
 }

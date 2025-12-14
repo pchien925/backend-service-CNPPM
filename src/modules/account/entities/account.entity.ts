@@ -7,7 +7,7 @@ import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator
 @Entity({ name: `tbl_account` })
 export class Account extends Auditable<string> {
   @PrimaryColumn({ type: 'bigint', unsigned: true, name: 'id' })
-  id!: number;
+  id!: string;
 
   @Column({ name: 'kind', type: 'int' })
   @IsInt()

@@ -6,8 +6,8 @@ import { Food } from 'src/modules/food/entities/food.entity';
 
 @Entity({ name: 'tbl_order_item_combo_selection' })
 export class OrderItemComboSelection extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({
     name: 'extra_price',

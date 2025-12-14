@@ -1,8 +1,8 @@
 import { IsInt, IsNotEmpty } from 'class-validator';
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export class ReuseId {
-  reusedId?: number;
+  reusedId?: string;
 }
 
 export abstract class Auditable<T> extends ReuseId {
@@ -48,16 +48,4 @@ export abstract class Auditable<T> extends ReuseId {
   })
   @IsInt()
   status: number = 1;
-
-  //set up tạm defalt là admin
-  // @BeforeInsert()
-  // setCreatedBy() {
-  //   this.createdBy = this.createdBy || ('admin' as T);
-  //   this.modifiedBy = this.modifiedBy || ('admin' as T);
-  // }
-
-  // @BeforeUpdate()
-  // setModifiedBy() {
-  //   this.modifiedBy = this.modifiedBy || ('admin' as T);
-  // }
 }

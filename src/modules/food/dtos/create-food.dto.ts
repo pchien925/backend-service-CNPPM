@@ -46,14 +46,14 @@ export class CreateFoodDto {
   ordering?: number;
 
   @ApiProperty()
-  @IsNotEmpty()
-  @IsInt()
-  categoryId!: number;
+  @IsString({ message: 'Category ID must be a string' })
+  @IsNotEmpty({ message: 'Category ID is required' })
+  categoryId!: string;
 
-  @ApiPropertyOptional({ type: [Number], description: 'List of Tag IDs' })
+  @ApiPropertyOptional({ type: [String], description: 'List of Tag IDs' })
   @IsOptional()
   @IsArray()
-  tagIds?: number[];
+  tagIds?: string[];
 
   @ApiPropertyOptional({
     type: [FoodOptionPayloadDto],
