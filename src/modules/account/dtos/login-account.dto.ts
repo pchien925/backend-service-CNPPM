@@ -1,14 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class LoginAccountDto {
-  @ApiProperty({ description: 'Username hoặc email' })
-  @IsNotEmpty({ message: 'Username/Email is required' })
+  @ApiProperty({
+    description: 'Username',
+  })
+  @IsNotEmpty()
   @IsString()
-  usernameOrEmail!: string;
+  username: string;
 
-  @ApiProperty({ description: 'Mật khẩu' })
-  @IsNotEmpty({ message: 'Password is required' })
+  @ApiProperty({
+    description: 'Password',
+  })
+  @IsNotEmpty()
   @IsString()
-  password!: string;
+  @MinLength(6)
+  password: string;
 }

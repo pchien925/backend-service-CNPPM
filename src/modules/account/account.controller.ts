@@ -1,59 +1,43 @@
-import { Body, Get, HttpStatus, Post } from '@nestjs/common';
-import { AccountDto } from './dtos/account.dto';
-import { AccountService } from './account.service';
-import { ApiController } from 'src/decorators/api-controller.decorator';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { LoginAccountDto } from './dtos/login-account.dto';
-import { LoginResponseDto } from './dtos/login-response.dto';
-import { VerifyOtpDto } from './dtos/verify-otp.dto';
-import { ResendOtpDto } from './dtos/resend-otp.dto';
-import { ApiResponse } from 'src/shared/dtos/api-response.dto';
+import { Body, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Req } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
+import { ApiController } from 'src/common/decorators/api-controller.decorator';
+import { Permissions } from 'src/common/decorators/permissions.decorator';
+import { ApiResponse } from 'src/shared/dtos/api-response.dto';
+import { AccountService } from './account.service';
+import { AccountDto } from './dtos/account.dto';
+import { CreateAccountDto } from './dtos/create-account.dto';
 
-@ApiController('accounts', { auth: true })
+@ApiController('account', { auth: true })
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Get('list')
+  @Permissions('ACC_L')
   @ApiOperation({ summary: 'Get all accounts' })
   async list(): Promise<ApiResponse<AccountDto[]>> {
     const accounts = await this.accountService.list();
-    return new ApiResponse(accounts, 'Get list accounts successfully', HttpStatus.OK);
+    return ApiResponse.success(accounts, 'Get list accounts successfully', HttpStatus.OK);
+  }
+  @Get('profile')
+  @ApiOperation({ summary: 'Get current account profile' })
+  async profile(@Req() req: any) {
+    const account = await this.accountService.getAccountById(req.user.id);
+    return ApiResponse.success(account, 'Get profile successfully', HttpStatus.OK);
   }
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register new account and send OTP to email' })
-  async register(
-    @Body() dto: CreateAccountDto,
-  ): Promise<ApiResponse<{ message: string; email: string }>> {
-    const result = await this.accountService.create(dto);
-    return new ApiResponse(
-      result,
-      'Registration successful. Please check your email for OTP.',
-      HttpStatus.CREATED,
-    );
+  @Post('create')
+  @Permissions('ACC_C')
+  @ApiOperation({ summary: 'Create user account' })
+  async create(@Body() dto: CreateAccountDto): Promise<ApiResponse<void>> {
+    await this.accountService.create(dto);
+    return ApiResponse.successMessage('User created successfully');
   }
 
-  @Post('verify-otp')
-  @ApiOperation({ summary: 'Verify OTP code to complete registration' })
-  async verifyOtp(
-    @Body() dto: VerifyOtpDto,
-  ): Promise<ApiResponse<{ message: string; account: AccountDto }>> {
-    const result = await this.accountService.verifyOtp(dto);
-    return new ApiResponse(result, 'Email verified successfully', HttpStatus.OK);
-  }
-
-  @Post('resend-otp')
-  @ApiOperation({ summary: 'Resend OTP code to email' })
-  async resendOtp(@Body() dto: ResendOtpDto): Promise<ApiResponse<{ message: string }>> {
-    const result = await this.accountService.resendOtp(dto);
-    return new ApiResponse(result, 'OTP resent successfully', HttpStatus.OK);
-  }
-
-  @Post('login')
-  @ApiOperation({ summary: 'Login to the system' })
-  async login(@Body() dto: LoginAccountDto): Promise<ApiResponse<LoginResponseDto>> {
-    const result = await this.accountService.login(dto);
-    return new ApiResponse(result, 'Login successfully', HttpStatus.OK);
+  @Delete('delete/:id')
+  @Permissions('ACC_D')
+  @ApiOperation({ summary: 'Delete user account' })
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
+    await this.accountService.deleteAccount(id);
+    return ApiResponse.successMessage('User deleted successfully');
   }
 }

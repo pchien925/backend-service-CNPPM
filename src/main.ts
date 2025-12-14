@@ -2,29 +2,38 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupSwagger } from './configs/swagger.config';
 import { BadRequestException, ValidationError, ValidationPipe } from '@nestjs/common';
+import { GlobalExceptionFilter } from './exception/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
   setupSwagger(app);
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: false,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
-  );
-  app.useGlobalPipes(
-    new ValidationPipe({
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
         return new BadRequestException(
           validationErrors.map(error => ({
             field: error.property,
-            error: Object.values(error.constraints).join(', '),
+            error: error.constraints
+              ? Object.values(error.constraints).join(', ')
+              : 'Invalid value',
           })),
         );
       },
     }),
   );
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.enableCors({
+    origin: ['https://abc.com', 'http://localhost:3000'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Server is running on port: ${process.env.PORT}`);
 }

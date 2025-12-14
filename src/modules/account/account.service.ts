@@ -1,26 +1,24 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { JwtService } from '@nestjs/jwt';
-import { Account } from './entities/account.entity';
+import { STATUS_ACTIVE } from 'src/constants/app.constant';
+import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from 'src/exception/bad-request.exception';
+import { NotFoundException } from 'src/exception/not-found.exception';
+import { UnauthorizationException } from 'src/exception/unauthorization.exception';
+import { hashPassword, verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
+import { UserDetailsDto } from '../auth/dtos/user-details.dto';
 import { Group } from '../group/entities/group.entity';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { LoginAccountDto } from './dtos/login-account.dto';
-import { AccountDto } from './dtos/account.dto';
-import { LoginResponseDto } from './dtos/login-response.dto';
-import { VerifyOtpDto } from './dtos/verify-otp.dto';
-import { ResendOtpDto } from './dtos/resend-otp.dto';
 import { AccountMapper } from './account.mapper';
-import { EmailService } from '../../shared/services/email.service';
-import * as bcrypt from 'bcrypt';
+import { AccountDto } from './dtos/account.dto';
+import { CreateAccountDto } from './dtos/create-account.dto';
+import { Account } from './entities/account.entity';
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectRepository(Account) private readonly accountRepo: Repository<Account>,
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
-    private readonly jwtService: JwtService,
-    private readonly emailService: EmailService,
   ) {}
 
   async list(): Promise<AccountDto[]> {
@@ -28,169 +26,93 @@ export class AccountService {
     return AccountMapper.toResponseList(accounts);
   }
 
-  async create(dto: CreateAccountDto): Promise<{ message: string; email: string }> {
-    // Kiểm tra username/email đã tồn tại
+  async getAccountById(id: string): Promise<AccountDto> {
+    const account = await this.accountRepo.findOne({
+      where: { id: id },
+      relations: ['group', 'group.permissions'],
+    });
+
+    if (!account) {
+      throw new NotFoundException('Tài khoản không tồn tại', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+    }
+
+    return AccountMapper.toDetailResponse(account);
+  }
+
+  async validateCredentials(username: string, password: string): Promise<UserDetailsDto> {
+    const account = await this.accountRepo.findOne({
+      where: { username, status: STATUS_ACTIVE },
+      relations: ['group', 'group.permissions'],
+      select: [
+        'id',
+        'username',
+        'email',
+        'password',
+        'fullName',
+        'phone',
+        'avatarPath',
+        'kind',
+        'isSuperAdmin',
+      ],
+    });
+    if (!account) {
+      throw new UnauthorizationException('Invalid credentials', ErrorCode.AUTH_ERROR_UNAUTHORIZED);
+    }
+    const match = await verifyPassword(password, account.password);
+    if (!match) {
+      throw new UnauthorizationException(
+        'Invalid credentials',
+        ErrorCode.ACCOUNT_ERROR_INVALID_PASSWORD,
+      );
+    }
+
+    const authorities = (account.group?.permissions ?? [])
+      .map(p => p.permissionCode)
+      .filter(Boolean);
+
+    return new UserDetailsDto(
+      account.id,
+      account.username,
+      account.kind,
+      authorities,
+      account.isSuperAdmin,
+    );
+  }
+
+  async create(dto: CreateAccountDto): Promise<void> {
     const existUser = await this.accountRepo.findOne({
       where: [{ username: dto.username }, { email: dto.email }],
     });
+
     if (existUser) {
-      throw new BadRequestException('Username or email already exists');
+      throw new BadRequestException(
+        'Username or email already exists',
+        ErrorCode.ACCOUNT_ERROR_USERNAME_EXISTED,
+      );
     }
 
     const account = AccountMapper.toEntityFromCreate(dto);
 
-    if (dto.groupId) {
-      const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
-      if (!group) {
-        throw new BadRequestException('Group not found');
-      }
-      account.group = group;
+    const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
+    if (!group) {
+      throw new NotFoundException('Group not found');
     }
+    account.group = group;
 
-    // Tạo và lưu OTP
-    const otpCode = this.emailService.generateOtp();
-    const otpExpiresAt = new Date();
-    otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 5); // OTP có hiệu lực 5 phút
+    account.status = STATUS_ACTIVE;
+    account.password = await hashPassword(dto.password);
 
-    account.otpCode = otpCode;
-    account.otpExpiresAt = otpExpiresAt;
-    account.emailVerified = false;
-
-    const saved = await this.accountRepo.save(account);
-
-    // Gửi OTP qua email
-    try {
-      await this.emailService.sendOtpEmail(dto.email, otpCode, dto.fullName);
-    } catch (error) {
-      // Nếu gửi email thất bại, xóa tài khoản đã tạo
-      await this.accountRepo.remove(saved);
-      throw new BadRequestException('Failed to send OTP email. Please try again.');
-    }
-
-    return {
-      message: 'Account created successfully. Please check your email for OTP verification.',
-      email: dto.email,
-    };
-  }
-
-  async login(dto: LoginAccountDto): Promise<LoginResponseDto> {
-    // Tìm tài khoản theo username hoặc email
-    const account = await this.accountRepo.findOne({
-      where: [{ username: dto.usernameOrEmail }, { email: dto.usernameOrEmail }],
-      relations: ['group'],
-      select: ['id', 'username', 'email', 'password', 'fullName', 'phone', 'avatarPath', 'group'],
-    });
-
-    if (!account) {
-      throw new UnauthorizedException('Invalid username/email or password');
-    }
-
-    // Kiểm tra email đã được xác thực chưa
-    if (!account.emailVerified) {
-      throw new UnauthorizedException(
-        'Email not verified. Please check your email for OTP verification.',
-      );
-    }
-
-    // Kiểm tra mật khẩu
-    const isPasswordValid = await bcrypt.compare(dto.password, account.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid username/email or password');
-    }
-
-    // Tạo JWT token
-    const payload = {
-      id: account.id,
-      username: account.username,
-      email: account.email,
-    };
-    const accessToken = this.jwtService.sign(payload);
-
-    // Cập nhật lastLogin
-    account.lastLogin = new Date();
-    await this.accountRepo.save(account);
-
-    const accountDto = AccountMapper.toResponse(account);
-    return {
-      accessToken,
-      account: accountDto,
-      tokenType: 'Bearer',
-      expiresIn: 604800,
-    };
-  }
-
-  async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string; account: AccountDto }> {
-    const account = await this.accountRepo.findOne({
-      where: { email: dto.email },
-      relations: ['group'],
-    });
-
-    if (!account) {
-      throw new BadRequestException('Account not found');
-    }
-
-    if (account.emailVerified) {
-      throw new BadRequestException('Email already verified');
-    }
-
-    if (!account.otpCode || !account.otpExpiresAt) {
-      throw new BadRequestException('No OTP found. Please request a new one.');
-    }
-
-    if (new Date() > account.otpExpiresAt) {
-      throw new BadRequestException('OTP has expired. Please request a new one.');
-    }
-
-    if (account.otpCode !== dto.otpCode) {
-      throw new BadRequestException('Invalid OTP code');
-    }
-
-    // Xác thực thành công - cập nhật trạng thái
-    account.emailVerified = true;
     account.otpCode = null;
     account.otpExpiresAt = null;
 
-    const updatedAccount = await this.accountRepo.save(account);
-    const accountDto = AccountMapper.toResponse(updatedAccount);
-
-    return {
-      message: 'Email verified successfully',
-      account: accountDto,
-    };
+    await this.accountRepo.save(account);
   }
 
-  async resendOtp(dto: ResendOtpDto): Promise<{ message: string }> {
-    const account = await this.accountRepo.findOne({
-      where: { email: dto.email },
-    });
-
+  async deleteAccount(id: string): Promise<void> {
+    const account = await this.accountRepo.findOne({ where: { id } });
     if (!account) {
-      throw new BadRequestException('Account not found');
+      throw new NotFoundException('Account not found');
     }
-
-    if (account.emailVerified) {
-      throw new BadRequestException('Email already verified');
-    }
-
-    // Tạo OTP mới
-    const otpCode = this.emailService.generateOtp();
-    const otpExpiresAt = new Date();
-    otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 5);
-
-    account.otpCode = otpCode;
-    account.otpExpiresAt = otpExpiresAt;
-
-    await this.accountRepo.save(account);
-
-    // Gửi OTP mới qua email
-    try {
-      await this.emailService.sendOtpEmail(dto.email, otpCode, account.fullName);
-    } catch (error) {
-      throw new BadRequestException('Failed to send OTP email. Please try again.');
-    }
-
-    return {
-      message: 'New OTP has been sent to your email',
-    };
+    await this.accountRepo.remove(account);
   }
 }

@@ -1,9 +1,9 @@
-import { Account } from './entities/account.entity';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { UpdateAccountDto } from './dtos/update-account.dto';
-import { AccountDto } from './dtos/account.dto';
 import { Group } from '../group/entities/group.entity';
 import { GroupMapper } from '../group/group.mapper';
+import { AccountDto } from './dtos/account.dto';
+import { CreateAccountDto } from './dtos/create-account.dto';
+import { UpdateAccountDto } from './dtos/update-account.dto';
+import { Account } from './entities/account.entity';
 
 export class AccountMapper {
   static toEntityFromCreate(dto: CreateAccountDto): Account {
@@ -11,7 +11,6 @@ export class AccountMapper {
     entity.kind = dto.kind;
     entity.username = dto.username;
     entity.email = dto.email;
-    entity.password = dto.password;
     entity.fullName = dto.fullName;
     entity.phone = dto.phone;
     entity.avatarPath = dto.avatarPath;
@@ -24,7 +23,6 @@ export class AccountMapper {
   static toEntityFromUpdate(entity: Account, dto: UpdateAccountDto): Account {
     if (dto.username !== undefined) entity.username = dto.username;
     if (dto.email !== undefined) entity.email = dto.email;
-    if (dto.password !== undefined) entity.password = dto.password;
     if (dto.fullName !== undefined) entity.fullName = dto.fullName;
     if (dto.phone !== undefined) entity.phone = dto.phone;
     if (dto.avatarPath !== undefined) entity.avatarPath = dto.avatarPath;
@@ -40,6 +38,18 @@ export class AccountMapper {
       phone: entity.phone,
       group: entity.group ? GroupMapper.toResponse(entity.group) : null,
       avatarPath: entity.avatarPath,
+    };
+  }
+
+  static toDetailResponse(entity: Account): AccountDto {
+    return {
+      id: entity.id,
+      username: entity.username,
+      email: entity.email,
+      fullName: entity.fullName,
+      phone: entity.phone,
+      avatarPath: entity.avatarPath,
+      group: entity.group ? GroupMapper.toDetailResponse(entity.group) : null,
     };
   }
 

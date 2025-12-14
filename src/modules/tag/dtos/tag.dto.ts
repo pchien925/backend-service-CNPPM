@@ -1,0 +1,15 @@
+import { ApiProperty } from '@nestjs/swagger';
+
+export class TagDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiProperty()
+  color: string | null = null;
+
+  @ApiProperty()
+  status!: number;
+}
