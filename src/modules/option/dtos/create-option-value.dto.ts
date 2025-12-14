@@ -26,6 +26,6 @@ export class CreateOptionValueDto {
 
   @ApiProperty()
   @IsNotEmpty({ message: 'Option ID cannot be null' })
-  @IsInt()
-  optionId!: number;
+  @IsString()
+  optionId!: string;
 }

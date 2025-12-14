@@ -7,8 +7,8 @@ import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator
 
 @Entity({ name: `tbl_permission` })
 export class Permission extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', unique: true, length: 255 })
   @IsNotEmpty({ message: 'Name is required' })

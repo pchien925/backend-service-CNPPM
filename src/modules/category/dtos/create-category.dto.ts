@@ -31,6 +31,6 @@ export class CreateCategoryDto {
 
   @ApiPropertyOptional({ description: 'ID of the parent category' })
   @IsOptional()
-  @IsInt({ message: 'Parent ID must be an integer' })
-  parentId?: number;
+  @IsString({ message: 'Parent ID must be a string' })
+  parentId?: string;
 }

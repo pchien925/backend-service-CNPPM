@@ -33,7 +33,7 @@ export class FoodController {
   @Get(':id')
   @Permissions('FOOD_V')
   @ApiOperation({ summary: 'Get food detail with all related tags and options' })
-  async findOne(@Param('id') id: number): Promise<ApiResponse<FoodDto>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponse<FoodDto>> {
     const food = await this.foodService.findOne(id);
     return ApiResponse.success(food, 'Get food detail successfully');
   }
@@ -49,7 +49,7 @@ export class FoodController {
   @Delete(':id')
   @Permissions('FOOD_D')
   @ApiOperation({ summary: 'Delete a food item (soft delete)' })
-  async delete(@Param('id') id: number): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.foodService.delete(id);
     return ApiResponse.successMessage('Food deleted successfully');
   }

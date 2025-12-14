@@ -6,48 +6,33 @@ import * as crypto from 'crypto';
 export class SnowFlakeIdService {
   private static instance: SnowFlakeIdService;
 
-  // ============================== Config =================================
-  /** Start time cut (2017-03-10) */
   private readonly twepoch = 1489111610226n;
 
-  /** The number of bits in the machine id */
   private readonly workerIdBits = 5n;
 
-  /** Number of digits in the data identifier id */
   private readonly dataCenterIdBits = 5n;
 
-  /** The number of bits in the id of the sequence */
-  private readonly sequenceBits = 2n;
+  private readonly sequenceBits = 12n;
 
-  /** The maximum machine id supported */
   private readonly maxWorkerId = -1n ^ (-1n << this.workerIdBits);
 
-  /** The maximum data ID id supported */
   private readonly maxDataCenterId = -1n ^ (-1n << this.dataCenterIdBits);
 
-  /** Machine ID is shifted to the left by 5 bits */
   private readonly workerIdShift = this.sequenceBits;
 
-  /** The data identification id is shifted to the left by 10 bits (5+5) */
   private readonly dataCenterIdShift = this.sequenceBits + this.workerIdBits;
 
-  /** Time is shifted to the left by 15 bits (5+5+5) */
   private readonly timestampLeftShift =
     this.sequenceBits + this.workerIdBits + this.dataCenterIdBits;
 
-  /** Generate a mask for the sequence */
   private readonly sequenceMask = -1n ^ (-1n << this.sequenceBits);
 
-  /** Work Machine ID (0~31) */
   private workerId = 0n;
 
-  /** Data Center ID (0~31) */
   private dataCenterId = 0n;
 
-  /** Sequence within milliseconds (0~4095) */
   private sequence = 0n;
 
-  /** Time to last generated ID */
   private lastTimestamp = -1n;
 
   private constructor() {
@@ -62,33 +47,31 @@ export class SnowFlakeIdService {
     return this.instance;
   }
 
-  /** Set machine id (0~31) */
-  public setNodeId(nodeId: number): void {
-    if (nodeId < 0 || nodeId > Number(this.maxWorkerId)) {
-      throw new Error(`NodeId must be between 0 and ${this.maxWorkerId.toString()}`);
+  public setWorkerId(workerId: number): void {
+    if (workerId < 0 || workerId > Number(this.maxWorkerId)) {
+      throw new Error(`WorkerId phải nằm trong khoảng từ 0 đến ${this.maxWorkerId.toString()}`);
     }
-    this.workerId = BigInt(nodeId);
+    this.workerId = BigInt(workerId);
   }
 
-  /** Set data center id (0~31) */
   public setDataCenterId(dataCenterId: number): void {
     if (dataCenterId < 0 || dataCenterId > Number(this.maxDataCenterId)) {
       throw new Error(
-        `dataCenterId can't be greater than ${this.maxDataCenterId.toString()} or less than 0`,
+        `Data Center ID không được lớn hơn ${this.maxDataCenterId.toString()} hoặc nhỏ hơn 0`,
       );
     }
     this.dataCenterId = BigInt(dataCenterId);
   }
 
-  /**
-   * Get the next ID (this method is thread safe)
-   * @return SnowflakeId (as string)
-   */
-  public nextId(): number {
+  public nextId(): string {
     let timestamp = this.timeGen();
 
     if (timestamp < this.lastTimestamp) {
-      throw new Error('Clock moved backwards!');
+      throw new Error(
+        `Clock moved backwards. Refusing to generate id for ${
+          this.lastTimestamp - timestamp
+        } milliseconds`,
+      );
     }
 
     if (timestamp === this.lastTimestamp) {
@@ -108,10 +91,9 @@ export class SnowFlakeIdService {
       (this.workerId << this.workerIdShift) |
       this.sequence;
 
-    return Number(idBigInt);
+    return idBigInt.toString();
   }
 
-  /** Block until next millisecond */
   protected tilNextMillis(lastTimestamp: bigint): bigint {
     let timestamp = this.timeGen();
     while (timestamp <= lastTimestamp) {
@@ -120,12 +102,10 @@ export class SnowFlakeIdService {
     return timestamp;
   }
 
-  /** Returns the current time in milliseconds */
   protected timeGen(): bigint {
     return BigInt(Date.now());
   }
 
-  /** Get workId based on IP hash */
   private getWorkId(): number {
     try {
       const networkInterfaces = os.networkInterfaces();
@@ -140,6 +120,7 @@ export class SnowFlakeIdService {
       }
 
       const host = addresses[0] || '127.0.0.1';
+
       const sum = host
         .split('.')
         .map(x => parseInt(x))
@@ -151,7 +132,6 @@ export class SnowFlakeIdService {
     }
   }
 
-  /** Get dataCenterId based on hostname hash */
   private getDataCenterId(): number {
     const hostname = os.hostname();
     const sum = hostname

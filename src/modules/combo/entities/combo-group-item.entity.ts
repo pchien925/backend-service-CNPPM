@@ -6,8 +6,8 @@ import { ComboGroup } from './combo-group.entity';
 
 @Entity({ name: 'tbl_combo_group_item' })
 export class ComboGroupItem extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'extra_price', type: 'int', default: 0 })
   extraPrice!: number;

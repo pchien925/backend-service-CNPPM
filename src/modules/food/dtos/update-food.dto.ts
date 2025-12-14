@@ -14,8 +14,8 @@ import { FoodOptionPayloadDto } from './food-option-payload.dto';
 export class UpdateFoodDto {
   @ApiProperty()
   @IsNotEmpty()
-  @IsInt()
-  id!: number;
+  @IsString()
+  id!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -55,18 +55,18 @@ export class UpdateFoodDto {
   @IsInt()
   status?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'ID of the category' })
   @IsOptional()
-  @IsInt()
-  categoryId?: number;
+  @IsString({ message: 'Category ID must be a string' })
+  categoryId?: string;
 
   @ApiPropertyOptional({
-    type: [Number],
+    type: [String],
     description: 'List of Tag IDs (overwrite or sync existing tags)',
   })
   @IsOptional()
   @IsArray()
-  tagIds?: number[];
+  tagIds?: string[];
 
   @ApiPropertyOptional({
     type: [FoodOptionPayloadDto],

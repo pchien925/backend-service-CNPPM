@@ -6,15 +6,15 @@ import { Order } from './order.entity';
 
 @Entity({ name: 'tbl_order_item' })
 export class OrderItem extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'item_kind', type: 'int', default: 1, comment: '1: food, 2: combo' })
   @IsInt()
   itemKind!: number;
 
   @Column({ name: 'item_id', type: 'bigint', comment: 'ID of the Food or Combo' })
-  itemId!: number;
+  itemid!: string;
 
   @Column({ name: 'quantity', type: 'int' })
   @IsInt()

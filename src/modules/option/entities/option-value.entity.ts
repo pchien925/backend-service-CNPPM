@@ -6,8 +6,8 @@ import { Option } from './option.entity';
 
 @Entity({ name: 'tbl_option_value' })
 export class OptionValue extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', length: 255 })
   @IsNotEmpty()

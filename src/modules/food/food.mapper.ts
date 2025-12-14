@@ -1,4 +1,5 @@
 import { CategoryMapper } from '../category/category.mapper';
+import { OptionValueMapper } from '../option/option-value.mapper';
 import { TagMapper } from '../tag/tag.mapper';
 import { CreateFoodDto } from './dtos/create-food.dto';
 import { FoodOptionDto } from './dtos/food-option.dto';
@@ -39,6 +40,9 @@ export class FoodMapper {
       ordering: entity.ordering,
       requirementType: entity.requirementType,
       maxSelect: entity.maxSelect,
+      optionValues: optionEntity.values?.length
+        ? OptionValueMapper.toResponseList(optionEntity.values)
+        : [],
     };
   }
 
@@ -69,7 +73,7 @@ export class FoodMapper {
       ordering: entity.ordering,
       status: entity.status,
       category: CategoryMapper.toResponse(entity.category),
-      tags: [],
+      tags: entity.foodTags ? entity.foodTags.map(tag => TagMapper.toResponse(tag.tag)) : [],
       options: [],
     };
   }

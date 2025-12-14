@@ -1,22 +1,18 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  STATUS_ACTIVE,
-  STATUS_DELETE,
-  STATUS_INACTIVE,
-  STATUS_PENDING,
-} from 'src/constants/app.constant';
+import { STATUS_DELETE } from 'src/constants/app.constant';
+import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from 'src/exception/bad-request.exception';
+import { NotFoundException } from 'src/exception/not-found.exception';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
-import { ILike, In, Not, Repository } from 'typeorm';
+import { ILike, Not, Repository } from 'typeorm';
 import { CreateOptionDto } from './dtos/create-option.dto';
 import { OptionQueryDto } from './dtos/option-query.dto';
 import { OptionDto } from './dtos/option.dto';
 import { UpdateOptionDto } from './dtos/update-option.dto';
 import { Option } from './entities/option.entity';
 import { OptionMapper } from './option.mapper';
-import { BadRequestException } from 'src/exception/bad-request.exception';
-import { ErrorCode } from 'src/constants/error-code.constant';
-import { Injectable } from '@nestjs/common';
-import { NotFoundException } from 'src/exception/not-found.exception';
+import { OptionSpecification } from './specification/option.specification';
 
 @Injectable()
 export class OptionService {
@@ -29,7 +25,7 @@ export class OptionService {
     const existingOption = await this.optionRepo.findOne({
       where: {
         name: ILike(dto.name),
-        status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+        status: Not(STATUS_DELETE),
       },
     });
 
@@ -44,10 +40,10 @@ export class OptionService {
   }
 
   async findAll(query: OptionQueryDto): Promise<ResponseListDto<OptionDto[]>> {
-    const { page = 1, limit = 10, name } = query;
+    const { page = 1, limit = 10 } = query;
 
-    const where: any = {};
-    if (name) where.name = ILike(`%${name}%`);
+    const spec = new OptionSpecification(query);
+    const where = spec.toWhere();
 
     const [entities, totalElements] = await this.optionRepo.findAndCount({
       where,
@@ -60,7 +56,7 @@ export class OptionService {
     return new ResponseListDto(content, totalElements, limit);
   }
 
-  async findOne(id: number): Promise<OptionDto> {
+  async findOne(id: string): Promise<OptionDto> {
     const entity = await this.optionRepo.findOne({
       where: { id },
       relations: ['values'],
@@ -76,7 +72,7 @@ export class OptionService {
   async update(dto: UpdateOptionDto): Promise<void> {
     const entity = await this.optionRepo.findOneBy({
       id: dto.id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
 
     if (!entity) {
@@ -98,7 +94,7 @@ export class OptionService {
     await this.optionRepo.save(updatedEntity);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     const result = await this.optionRepo.update({ id }, { status: STATUS_DELETE });
 
     if (result.affected === 0) {

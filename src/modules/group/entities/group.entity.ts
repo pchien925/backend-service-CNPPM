@@ -6,8 +6,8 @@ import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator
 
 @Entity({ name: `tbl_group` })
 export class Group extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', unique: true, length: 255 })
   @IsNotEmpty({ message: 'Group name is required' })

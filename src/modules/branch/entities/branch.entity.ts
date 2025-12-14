@@ -5,8 +5,8 @@ import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'tbl_branch' })
 export class Branch extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', length: 255 })
   @IsNotEmpty()

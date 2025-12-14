@@ -6,8 +6,8 @@ import { CartItem } from './cart-item.entity';
 
 @Entity({ name: 'tbl_cart_item_combo_selection' })
 export class CartItemComboSelection extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({
     name: 'extra_price',

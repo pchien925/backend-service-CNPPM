@@ -1,12 +1,21 @@
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { ComboTag } from './combo-tag.entity';
 
 @Entity({ name: 'tbl_combo' })
 export class Combo extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', length: 255 })
   name!: string;
@@ -29,6 +38,9 @@ export class Combo extends Auditable<string> {
   @ManyToOne(() => Category)
   @JoinColumn({ name: 'category_id' })
   category!: Category;
+
+  @OneToMany(() => ComboTag, comboTag => comboTag.tag)
+  comboTags?: ComboTag[];
 
   @BeforeInsert()
   generateId() {

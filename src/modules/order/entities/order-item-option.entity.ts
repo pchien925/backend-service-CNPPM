@@ -6,8 +6,8 @@ import { OrderItem } from './order-item.entity';
 
 @Entity({ name: 'tbl_order_item_option' })
 export class OrderItemOption extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({
     name: 'extra_price',

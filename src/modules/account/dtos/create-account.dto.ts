@@ -35,6 +35,6 @@ export class CreateAccountDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsInt({ message: 'groupId must be an integer' })
-  groupId?: number; //default gắn 16
+  @IsString({ message: 'groupId must be a string' })
+  groupId?: string; //default gắn 16
 }

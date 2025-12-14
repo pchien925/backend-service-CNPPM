@@ -36,7 +36,7 @@ export class AccountController {
   @Delete('delete/:id')
   @Permissions('ACC_D')
   @ApiOperation({ summary: 'Delete user account' })
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.accountService.deleteAccount(id);
     return ApiResponse.successMessage('User deleted successfully');
   }

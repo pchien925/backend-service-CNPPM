@@ -12,14 +12,12 @@ export class CategoryQueryDto extends Paginated {
 
   @ApiPropertyOptional({ description: 'ID of the parent category' })
   @IsOptional()
-  @IsInt({ message: 'Parent ID must be an integer' })
-  @Type(() => Number)
-  parentId?: number;
+  @IsString({ message: 'Parent ID must be a string' })
+  parentId?: string;
 
   @ApiPropertyOptional({ description: 'The kind/type of category' })
   @IsOptional()
   @IsInt({ message: 'Kind must be an integer' })
-  @Type(() => Number)
   kind?: number;
 
   @ApiPropertyOptional({

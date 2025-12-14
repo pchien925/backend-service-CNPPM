@@ -17,8 +17,8 @@ export class CreateGroupDto {
   @IsArray()
   @ArrayNotEmpty({ message: 'Permissions cannot be empty' })
   @ArrayUnique({ message: 'Permissions must be unique' })
-  @IsInt({ each: true, message: 'Each permission must be an integer' })
-  permissions!: number[];
+  @IsString({ each: true, message: 'Each permission must be a string' })
+  permissions!: string[];
 
   @ApiProperty()
   @IsNotEmpty({ message: 'Kind cannot be null' })

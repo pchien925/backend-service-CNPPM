@@ -83,9 +83,9 @@ export class CategoryService {
     return CategoryMapper.toResponseList(entities);
   }
 
-  async findOne(id: number): Promise<CategoryDto> {
+  async findOne(id: string): Promise<CategoryDto> {
     const entity = await this.categoryRepo.findOne({
-      where: { id, status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]) },
+      where: { id, status: Not(STATUS_DELETE) },
       relations: ['parent'],
     });
     if (!entity) {
@@ -99,7 +99,7 @@ export class CategoryService {
 
     const entity = await this.categoryRepo.findOneBy({
       id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
     if (!entity) {
       throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
@@ -108,7 +108,7 @@ export class CategoryService {
     let parentCategory: Category | null | undefined = entity.parent;
 
     if (parentId !== undefined) {
-      if (parentId === null || parentId === 0) {
+      if (parentId === null || parentId === null) {
         parentCategory = null;
       } else {
         parentCategory = await this.categoryRepo.findOneBy({
@@ -151,21 +151,20 @@ export class CategoryService {
     await this.categoryRepo.save(updatedEntity);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     const categoryToDelete = await this.categoryRepo.findOneBy({
       id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
 
     if (!categoryToDelete) {
       throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
     }
 
-    // Sử dụng closure hoặc phương thức riêng để xử lý đệ quy/cây
     await this.recursiveSoftDelete(id);
   }
 
-  private async recursiveSoftDelete(categoryId: number): Promise<void> {
+  private async recursiveSoftDelete(categoryId: string): Promise<void> {
     const children = await this.categoryRepo.find({
       where: { parent: { id: categoryId } },
       select: ['id'],

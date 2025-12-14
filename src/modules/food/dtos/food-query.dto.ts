@@ -9,9 +9,9 @@ export class FoodQueryDto extends Paginated {
   name?: string;
 
   @ApiPropertyOptional({ description: 'Filter by Category ID' })
-  @IsInt()
+  @IsString({ message: 'Category ID must be a string' })
   @IsOptional()
-  categoryId?: number;
+  categoryId?: string;
 
   @ApiPropertyOptional({ description: 'Filter by status (e.g., 1 for active)' })
   @IsInt()
@@ -29,4 +29,9 @@ export class FoodQueryDto extends Paginated {
   @Min(0)
   @IsOptional()
   maxPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Filter by tag ID' })
+  @IsOptional()
+  @IsString({ each: true, message: 'Tag ID must be a string' })
+  tagId?: string;
 }

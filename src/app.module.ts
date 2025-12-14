@@ -19,6 +19,8 @@ import { OptionValueModule } from './modules/option/option-value.module';
 import { CategoryModule } from './modules/category/category.module';
 import { TagModule } from './modules/tag/tag.module';
 import { FoodModule } from './modules/food/food.module';
+import { ComboModule } from './modules/combo/combo.module';
+import { UserContextHelper } from './shared/context/user-context.helper';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { FoodModule } from './modules/food/food.module';
     CategoryModule,
     TagModule,
     FoodModule,
+    ComboModule,
   ],
   providers: [
     {
@@ -52,6 +55,7 @@ import { FoodModule } from './modules/food/food.module';
       useClass: UserContextInterceptor,
     },
     AuditSubscriber,
+    UserContextHelper,
   ],
 })
 export class AppModule {}

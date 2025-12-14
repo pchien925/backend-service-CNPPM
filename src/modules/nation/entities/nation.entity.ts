@@ -5,8 +5,8 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } fr
 
 @Entity({ name: 'tbl_nation' })
 export class Nation extends Auditable<string> {
-  @PrimaryColumn({ type: 'bigint', unsigned: true })
-  id!: number;
+  @PrimaryColumn({ type: 'bigint', unique: true })
+  id!: string;
 
   @Column({ name: 'name', length: 255 })
   @IsNotEmpty()

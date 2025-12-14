@@ -5,7 +5,7 @@ export class UpdateCategoryDto {
   @ApiProperty({ description: 'ID of the category to update' })
   @IsNotEmpty({ message: 'ID cannot be null' })
   @IsInt({ message: 'ID must be an integer' })
-  id!: number;
+  id!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -36,8 +36,8 @@ export class UpdateCategoryDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt({ message: 'Parent ID must be an integer' })
-  parentId?: number;
+  @IsString({ message: 'Parent ID must be a string' })
+  parentId?: string;
 
   @ApiPropertyOptional({ description: 'Status (1: Active, 0: Inactive, -1: Deleted)' })
   @IsOptional()

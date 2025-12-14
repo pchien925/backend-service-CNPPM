@@ -1,5 +1,5 @@
 export class OptionValueDto {
-  id!: number;
+  id!: string;
   name!: string;
   description: string | null = null;
   extraPrice!: number;

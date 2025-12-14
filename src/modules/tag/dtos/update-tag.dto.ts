@@ -6,7 +6,7 @@ export class UpdateTagDto extends PartialType(CreateTagDto) {
   @ApiProperty()
   @IsInt()
   @IsNotEmpty()
-  id!: number;
+  id!: string;
 
   @ApiProperty()
   @IsInt()

@@ -33,7 +33,7 @@ export class CategoryController {
   @Get(':id')
   @Permissions('CAT_V')
   @ApiOperation({ summary: 'Get category detail' })
-  async findOne(@Param('id') id: number): Promise<ApiResponse<CategoryDto>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponse<CategoryDto>> {
     const category = await this.categoryService.findOne(id);
     return ApiResponse.success(category, 'Get category detail successfully');
   }
@@ -49,7 +49,7 @@ export class CategoryController {
   @Delete(':id')
   @Permissions('CAT_D')
   @ApiOperation({ summary: 'Delete a category (soft delete, applies to children too)' })
-  async delete(@Param('id') id: number): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.categoryService.delete(id);
     return ApiResponse.successMessage('Category deleted successfully');
   }

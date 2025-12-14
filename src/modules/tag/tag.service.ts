@@ -10,8 +10,8 @@ import { TagQueryDto } from './dtos/tag-query.dto';
 import { TagDto } from './dtos/tag.dto';
 import { UpdateTagDto } from './dtos/update-tag.dto';
 import { Tag } from './entities/tag.entity';
-import { TagMapper } from './tag.mapper';
 import { TagSpecification } from './specification/tag.specification';
+import { TagMapper } from './tag.mapper';
 
 @Injectable()
 export class TagService {
@@ -49,7 +49,7 @@ export class TagService {
     return TagMapper.toResponseList(entities);
   }
 
-  async findOne(id: number): Promise<TagDto> {
+  async findOne(id: string): Promise<TagDto> {
     const entity = await this.tagRepo.findOneBy({ id, status: STATUS_ACTIVE });
     if (!entity) {
       throw new NotFoundException(`Tag not found.`, ErrorCode.TAG_ERROR_NOT_FOUND);
@@ -78,7 +78,7 @@ export class TagService {
     await this.tagRepo.save(updatedEntity);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     const result = await this.tagRepo.update({ id }, { status: STATUS_DELETE });
 
     if (result.affected === 0) {

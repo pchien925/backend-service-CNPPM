@@ -3,7 +3,7 @@ import { TagDto } from 'src/modules/tag/dtos/tag.dto';
 import { FoodOptionDto } from './food-option.dto';
 
 export class FoodDto {
-  id!: number;
+  id!: string;
   name!: string;
   description: string | null = null;
   basePrice!: number;

@@ -13,7 +13,7 @@ export class FoodSpecification extends BaseSpecification<Food> {
 
   public toWhere(): FindOptionsWhere<Food> {
     const where: FindOptionsWhere<Food> = {};
-    const { name, categoryId, status, minPrice, maxPrice } = this.query;
+    const { name, categoryId, status, minPrice, maxPrice, tagId } = this.query;
 
     // Lọc theo tên
     if (name) {
@@ -23,7 +23,7 @@ export class FoodSpecification extends BaseSpecification<Food> {
     // Lọc theo Category ID (Sử dụng quan hệ)
     if (categoryId) {
       // Giả sử Food entity có mối quan hệ Category
-      (where as any).category = { id: categoryId };
+      where.category = { id: categoryId };
     }
 
     // Lọc theo Status (Mặc định là ACTIVE nếu không truyền)
@@ -41,6 +41,14 @@ export class FoodSpecification extends BaseSpecification<Food> {
       where.basePrice = MoreThanOrEqual(minPrice);
     } else if (hasValidMaxPrice) {
       where.basePrice = LessThanOrEqual(maxPrice);
+    }
+
+    if (tagId) {
+      where.foodTags = {
+        tag: {
+          id: tagId,
+        },
+      };
     }
 
     return where;

@@ -1,13 +1,13 @@
-import { ApiController } from 'src/common/decorators/api-controller.decorator';
-import { GroupService } from './group.service';
 import { Body, Get, Post, Query } from '@nestjs/common';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiOperation } from '@nestjs/swagger';
-import { CreateGroupDto } from './dtos/create-group.dto';
+import { ApiController } from 'src/common/decorators/api-controller.decorator';
+import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
-import { GroupDto } from './dtos/group.dto';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
+import { CreateGroupDto } from './dtos/create-group.dto';
+import { GroupDto } from './dtos/group.dto';
 import { GroupQueryDto } from './dtos/groups-query.dto';
+import { GroupService } from './group.service';
 
 @ApiController('group', { auth: true })
 export class GroupController {

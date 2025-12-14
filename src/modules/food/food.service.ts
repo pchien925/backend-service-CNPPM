@@ -1,18 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  STATUS_ACTIVE,
-  STATUS_DELETE,
-  STATUS_INACTIVE,
-  STATUS_PENDING,
-} from 'src/constants/app.constant';
+import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { Tag } from 'src/modules/tag/entities/tag.entity';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { CreateFoodDto } from './dtos/create-food.dto';
 import { FoodOptionPayloadDto } from './dtos/food-option-payload.dto';
 import { FoodQueryDto } from './dtos/food-query.dto';
@@ -62,19 +57,18 @@ export class FoodService {
 
     // 3. Xử lý FoodTags (Mối quan hệ N-N với Tag)
     if (tagIds && tagIds.length > 0) {
-      await this.syncFoodTags(savedFood, tagIds);
+      await this.syncFoodTags(savedFood, tagIds as string[]);
     }
 
-    // 4. Xử lý FoodOptions (Mối quan hệ N-N với Option kèm theo thuộc tính)
     if (options && options.length > 0) {
       await this.syncFoodOptions(savedFood, options);
     }
   }
 
-  async findOne(id: number): Promise<FoodDto> {
+  async findOne(id: string): Promise<FoodDto> {
     const food = await this.foodRepo.findOne({
-      where: { id, status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]) },
-      relations: ['category', 'foodTags.tag', 'foodOptions.option'],
+      where: { id, status: Not(STATUS_DELETE) },
+      relations: ['category', 'foodTags.tag', 'foodOptions.option', 'foodOptions.option.values'],
     });
 
     if (!food) {
@@ -115,7 +109,7 @@ export class FoodService {
 
     // 2. Cập nhật FoodTags (Đồng bộ hóa)
     if (tagIds !== undefined) {
-      await this.syncFoodTags(savedFood, tagIds);
+      await this.syncFoodTags(savedFood, tagIds as string[]);
     }
 
     // 3. Cập nhật FoodOptions (Đồng bộ hóa)
@@ -132,7 +126,7 @@ export class FoodService {
 
     const foods = await this.foodRepo.find({
       where,
-      relations: ['category'],
+      relations: ['category', 'foodTags.tag'],
       order: { id: 'ASC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -141,7 +135,7 @@ export class FoodService {
     return foods.map(food => FoodMapper.toFoodListResponse(food));
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     const result = await this.foodRepo.update({ id }, { status: STATUS_DELETE });
 
     if (result.affected === 0) {
@@ -151,7 +145,7 @@ export class FoodService {
 
   // ==================== Hàm kiểm tra trùng lặp ID ====================
   private validateDuplicateIds(
-    tagIds: number[] | undefined,
+    tagIds: string[] | undefined,
     options: FoodOptionPayloadDto[] | undefined,
   ): void {
     if (tagIds && tagIds.length > 0) {
@@ -165,7 +159,7 @@ export class FoodService {
     }
 
     if (options && options.length > 0) {
-      const optionIds = options.map(opt => opt.id);
+      const optionIds = options.map(opt => opt.id); // option.id (string)
       const uniqueOptionIds = new Set(optionIds);
       if (uniqueOptionIds.size !== optionIds.length) {
         throw new BadRequestException(
@@ -179,7 +173,7 @@ export class FoodService {
   /**
    * Đồng bộ hóa FoodTags: Thêm mới các Tag ID chưa có, Xóa các Tag ID đã bị loại bỏ.
    */
-  private async syncFoodTags(food: Food, newTagIds: number[]): Promise<void> {
+  private async syncFoodTags(food: Food, newTagIds: string[]): Promise<void> {
     // Lấy Tag ID hiện tại từ FoodTags đã được tải (food.foodTags)
     const currentFoodTags = food.foodTags || [];
     const currentTagIds = currentFoodTags.map(ft => ft.tag.id);
@@ -191,7 +185,7 @@ export class FoodService {
     const tagIdsToAdd = newTagIds.filter(newId => !currentTagIds.includes(newId));
 
     if (tagsToDelete.length > 0) {
-      const foodTagIdsToDelete = tagsToDelete.map(ft => ft.id);
+      const foodTagIdsToDelete: string[] = tagsToDelete.map(ft => ft.id);
       await this.foodTagRepo.delete(foodTagIdsToDelete);
     }
 
@@ -212,11 +206,11 @@ export class FoodService {
    */
   private async syncFoodOptions(food: Food, newOptions: FoodOptionPayloadDto[]): Promise<void> {
     const currentFoodOptions = food.foodOptions || [];
-    const optionIdsMap = new Map<number, FoodOption>();
+    const optionIdsMap = new Map<string, FoodOption>();
     currentFoodOptions.forEach(fo => optionIdsMap.set(fo.option.id, fo));
 
     const optionsToSave: FoodOption[] = [];
-    const foodOptionIdsToDelete: number[] = currentFoodOptions.map(fo => fo.id);
+    const foodOptionIdsToDelete: string[] = currentFoodOptions.map(fo => fo.id);
 
     if (!newOptions || newOptions.length === 0) {
       // Nếu không có Options mới, xóa tất cả
@@ -252,7 +246,6 @@ export class FoodService {
           optionsToSave.push(currentFo);
         }
       } else {
-        // Chưa tồn tại: CREATE
         const option = await this.optionRepo.findOneBy({
           id: newOpt.id,
           status: STATUS_ACTIVE,
@@ -269,12 +262,10 @@ export class FoodService {
       }
     }
 
-    // Xóa các bản ghi FoodOption không còn trong danh sách mới
     if (foodOptionIdsToDelete.length > 0) {
       await this.foodOptionRepo.delete(foodOptionIdsToDelete);
     }
 
-    // Lưu các bản ghi mới hoặc đã cập nhật
     if (optionsToSave.length > 0) {
       await this.foodOptionRepo.save(optionsToSave);
     }
