@@ -1,4 +1,5 @@
 import { Body, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard';
@@ -67,5 +68,16 @@ export class AuthController {
   async resetPassword(@Body() dto: ResetPasswordDto) {
     const result = await this.authService.resetPassword(dto);
     return ApiResponse.success(result, 'Password reset successfully', HttpStatus.OK);
+  }
+
+  // LOGOUT
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout user - invalidate token' })
+  async logout(@Req() req: any) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (token) {
+      await this.authService.logout(token);
+    }
+    return ApiResponse.successMessage('Logout successful');
   }
 }

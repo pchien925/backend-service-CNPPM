@@ -19,6 +19,8 @@ import { TokenDto } from '../account/dtos/token.dto';
 
 @Injectable()
 export class AuthService {
+  private blacklistedTokens = new Set<string>();
+
   constructor(
     @InjectRepository(Account) private readonly accountRepo: Repository<Account>,
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
@@ -199,5 +201,26 @@ export class AuthService {
 
   async validateUser(username: string, password: string): Promise<UserDetailsDto | null> {
     return await this.accountService.validateCredentials(username, password);
+  }
+
+  async logout(token: string): Promise<void> {
+    this.blacklistedTokens.add(token);
+  }
+
+  isTokenBlacklisted(token: string): boolean {
+    return this.blacklistedTokens.has(token);
+  }
+
+  async cleanupExpiredTokens(): Promise<void> {
+    const expiredTokens: string[] = [];
+
+    for (const token of this.blacklistedTokens) {
+      try {
+        this.jwtService.verify(token);
+      } catch (error) {
+        expiredTokens.push(token);
+      }
+    }
+    expiredTokens.forEach(token => this.blacklistedTokens.delete(token));
   }
 }
