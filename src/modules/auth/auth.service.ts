@@ -52,6 +52,9 @@ export class AuthService {
 
     const account = AccountMapper.toEntityFromCreate(dto);
 
+    // Hash password before saving
+    account.password = await hashPassword(dto.password);
+
     if (dto.groupId) {
       const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
       if (!group) {
@@ -202,7 +205,6 @@ export class AuthService {
   async validateUser(username: string, password: string): Promise<UserDetailsDto | null> {
     return await this.accountService.validateCredentials(username, password);
   }
-
   async logout(token: string): Promise<void> {
     this.blacklistedTokens.add(token);
   }

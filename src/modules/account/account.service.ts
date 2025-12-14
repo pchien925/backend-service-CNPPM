@@ -5,7 +5,7 @@ import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
 import { UnauthorizationException } from 'src/exception/unauthorization.exception';
-import { verifyPassword } from 'src/utils';
+import { hashPassword, verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
 import { UserDetailsDto } from '../auth/dtos/user-details.dto';
 import { Group } from '../group/entities/group.entity';
@@ -92,6 +92,9 @@ export class AccountService {
     }
 
     const account = AccountMapper.toEntityFromCreate(dto);
+
+    // Hash password before saving
+    account.password = await hashPassword(dto.password);
 
     const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
     if (!group) {

@@ -30,7 +30,13 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
-    origin: ['https://abc.com', 'http://localhost:3000'],
+    origin: [
+      'https://abc.com',
+      'http://localhost:3000',
+      'http://127.0.0.1:5500',
+      'http://localhost:5500',
+      'http://127.0.0.1:3000',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
