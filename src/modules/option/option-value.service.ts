@@ -40,7 +40,7 @@ export class OptionValueService {
       where: {
         name: ILike(dto.name),
         option: { id: dto.optionId },
-        status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+        status: Not(STATUS_DELETE),
       },
     });
 
@@ -74,7 +74,7 @@ export class OptionValueService {
   async findOne(id: number): Promise<OptionValueDto> {
     const entity = await this.optionValueRepo.findOneBy({
       id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
     if (!entity) {
       throw new NotFoundException(
@@ -88,7 +88,7 @@ export class OptionValueService {
   async update(dto: UpdateOptionValueDto): Promise<void> {
     const entity = await this.optionValueRepo.findOneBy({
       id: dto.id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
     if (!entity) {
       throw new NotFoundException(
@@ -101,7 +101,7 @@ export class OptionValueService {
         id: Not(dto.id),
         name: ILike(dto.name),
         option: { id: entity.option.id },
-        status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+        status: Not(STATUS_DELETE),
       },
     });
 

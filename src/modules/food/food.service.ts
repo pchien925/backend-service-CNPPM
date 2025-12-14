@@ -12,7 +12,7 @@ import { NotFoundException } from 'src/exception/not-found.exception';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Option } from 'src/modules/option/entities/option.entity';
 import { Tag } from 'src/modules/tag/entities/tag.entity';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { CreateFoodDto } from './dtos/create-food.dto';
 import { FoodOptionPayloadDto } from './dtos/food-option-payload.dto';
 import { FoodQueryDto } from './dtos/food-query.dto';
@@ -65,7 +65,6 @@ export class FoodService {
       await this.syncFoodTags(savedFood, tagIds);
     }
 
-    // 4. Xử lý FoodOptions (Mối quan hệ N-N với Option kèm theo thuộc tính)
     if (options && options.length > 0) {
       await this.syncFoodOptions(savedFood, options);
     }
@@ -73,8 +72,8 @@ export class FoodService {
 
   async findOne(id: number): Promise<FoodDto> {
     const food = await this.foodRepo.findOne({
-      where: { id, status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]) },
-      relations: ['category', 'foodTags.tag', 'foodOptions.option'],
+      where: { id, status: Not(STATUS_DELETE) },
+      relations: ['category', 'foodTags.tag', 'foodOptions.option', 'foodOptions.option.values'],
     });
 
     if (!food) {

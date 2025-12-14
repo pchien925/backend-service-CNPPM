@@ -29,7 +29,7 @@ export class OptionService {
     const existingOption = await this.optionRepo.findOne({
       where: {
         name: ILike(dto.name),
-        status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+        status: Not(STATUS_DELETE),
       },
     });
 
@@ -76,7 +76,7 @@ export class OptionService {
   async update(dto: UpdateOptionDto): Promise<void> {
     const entity = await this.optionRepo.findOneBy({
       id: dto.id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
 
     if (!entity) {

@@ -85,7 +85,7 @@ export class CategoryService {
 
   async findOne(id: number): Promise<CategoryDto> {
     const entity = await this.categoryRepo.findOne({
-      where: { id, status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]) },
+      where: { id, status: Not(STATUS_DELETE) },
       relations: ['parent'],
     });
     if (!entity) {
@@ -99,7 +99,7 @@ export class CategoryService {
 
     const entity = await this.categoryRepo.findOneBy({
       id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
     if (!entity) {
       throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
@@ -154,7 +154,7 @@ export class CategoryService {
   async delete(id: number): Promise<void> {
     const categoryToDelete = await this.categoryRepo.findOneBy({
       id,
-      status: In([STATUS_INACTIVE, STATUS_PENDING, STATUS_ACTIVE]),
+      status: Not(STATUS_DELETE),
     });
 
     if (!categoryToDelete) {
