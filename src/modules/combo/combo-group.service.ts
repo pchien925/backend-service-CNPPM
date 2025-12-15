@@ -70,7 +70,7 @@ export class ComboGroupService {
   }
 
   async findAll(query: ComboGroupQueryDto): Promise<ComboGroupDto[]> {
-    const { page = 1, limit = 1000 } = query;
+    const { page = 0, limit = 1000 } = query;
     const filterSpec = new ComboGroupSpecification(query);
     const where = filterSpec.toWhere();
 
@@ -86,7 +86,7 @@ export class ComboGroupService {
         'items.food.foodOptions.option.values',
       ],
       order: { ordering: 'ASC', id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 

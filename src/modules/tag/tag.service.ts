@@ -34,7 +34,7 @@ export class TagService {
   }
 
   async findAll(query: TagQueryDto): Promise<TagDto[]> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 0, limit = 10 } = query;
 
     const filterSpec = new TagSpecification(query);
     const where = filterSpec.toWhere();
@@ -42,7 +42,7 @@ export class TagService {
     const entities = await this.tagRepo.find({
       where,
       order: { id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 

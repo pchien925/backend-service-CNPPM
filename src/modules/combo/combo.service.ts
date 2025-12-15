@@ -73,7 +73,7 @@ export class ComboService {
   }
 
   async findAll(query: ComboQueryDto): Promise<ComboDto[]> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 0, limit = 10 } = query;
     const filterSpec = new ComboSpecification(query);
     const where = filterSpec.toWhere();
 
@@ -81,7 +81,7 @@ export class ComboService {
       where,
       relations: ['category', 'comboTags.tag'],
       order: { ordering: 'ASC', id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 
