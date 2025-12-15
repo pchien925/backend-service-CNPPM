@@ -46,7 +46,25 @@ export class Init1764776438515 implements MigrationInterface {
             (6778614941024313, 'List Combo Groups', '/v1/combo-groups/list', 'Get list of all groups for a combo', 'Combo Group Management', 0, 'COM_GR_L', 1, 'Admin', NOW(), 'Admin', NOW()),
             (6778614941024314, 'Get Combo Group detail', '/v1/combo-groups/:id', 'Get detail of a specific combo group', 'Combo Group Management', 0, 'COM_GR_V', 1, 'Admin', NOW(), 'Admin', NOW()),
             (6778614941024315, 'Update Combo Group', '/v1/combo-groups/update', 'Update combo group details or items', 'Combo Group Management', 0, 'COM_GR_U', 1, 'Admin', NOW(), 'Admin', NOW()),
-            (6778614941024316, 'Delete Combo Group', '/v1/combo-groups/:id', 'Soft delete a combo group (set status = -2)', 'Combo Group Management', 0, 'COM_GR_D', 1, 'Admin', NOW(), 'Admin', NOW());
+            (6778614941024316, 'Delete Combo Group', '/v1/combo-groups/:id', 'Soft delete a combo group (set status = -2)', 'Combo Group Management', 0, 'COM_GR_D', 1, 'Admin', NOW(), 'Admin', NOW()),
+
+            (6778614941024317, 'Create Nation', '/v1/nations/create', 'Create a new geographic unit (Province/District/Ward)', 'Nation Management', 0, 'NAT_C', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024318, 'List Nations', '/v1/nations/list', 'Get list of all nations with filtering/pagination', 'Nation Management', 1, 'NAT_L', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024319, 'Get Nation detail', '/v1/nations/:id', 'Get detail of a specific nation', 'Nation Management', 0, 'NAT_V', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024320, 'Update Nation', '/v1/nations/update', 'Update nation details or status', 'Nation Management', 0, 'NAT_U', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024321, 'Delete Nation', '/v1/nations/:id', 'Soft delete a nation (set status = -2, applies to children)', 'Nation Management', 0, 'NAT_D', 1, 'Admin', NOW(), 'Admin', NOW()),
+
+            (6778614941024322, 'Create Address', '/v1/addresses/create', 'Create a new address record', 'Address Management', 0, 'ADD_C', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024323, 'List Addresses', '/v1/addresses/list', 'Get list of addresses with filtering/pagination', 'Address Management', 0, 'ADD_L', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024324, 'Get Address detail', '/v1/addresses/:id', 'Get detail of a specific address', 'Address Management', 0, 'ADD_V', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024325, 'Update Address', '/v1/addresses/update', 'Update address details or status', 'Address Management', 0, 'ADD_U', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024326, 'Delete Address', '/v1/addresses/:id', 'Soft delete an address record', 'Address Management', 0, 'ADD_D', 1, 'Admin', NOW(), 'Admin', NOW()),
+            
+            (6778614941024327, 'Create Branch', '/v1/branches/create', 'Create a new store/company branch', 'Branch Management', 0, 'BR_C', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024328, 'List Branches', '/v1/branches/list', 'Get list of all branches with filtering/pagination', 'Branch Management', 1, 'BR_L', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024329, 'Get Branch detail', '/v1/branches/:id', 'Get detail of a specific branch', 'Branch Management', 0, 'BR_V', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024330, 'Update Branch', '/v1/branches/update', 'Update branch details or status', 'Branch Management', 0, 'BR_U', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024331, 'Delete Branch', '/v1/branches/:id', 'Soft delete a branch record', 'Branch Management', 0, 'BR_D', 1, 'Admin', NOW(), 'Admin', NOW());
         `);
     await queryRunner.query(`
             INSERT INTO \`tbl_permission_group\` (\`group_id\`, \`permission_id\`) VALUES
@@ -90,7 +108,25 @@ export class Init1764776438515 implements MigrationInterface {
             (15, 6778614941024313),
             (15, 6778614941024314),
             (15, 6778614941024315),
-            (15, 6778614941024316);
+            (15, 6778614941024316),
+            
+            (15, 6778614941024317),
+            (15, 6778614941024318),
+            (15, 6778614941024319),
+            (15, 6778614941024320),
+            (15, 6778614941024321),
+
+            (15, 6778614941024322),
+            (15, 6778614941024323),
+            (15, 6778614941024324),
+            (15, 6778614941024325),
+            (15, 6778614941024326),
+            
+            (15, 6778614941024327),
+            (15, 6778614941024328),
+            (15, 6778614941024329),
+            (15, 6778614941024330),
+            (15, 6778614941024331);
         `);
   }
 
@@ -110,6 +146,12 @@ export class Init1764776438515 implements MigrationInterface {
       6778614941024307, 6778614941024308, 6778614941024309, 6778614941024310, 6778614941024311,
       // Combo Group Permissions
       6778614941024312, 6778614941024313, 6778614941024314, 6778614941024315, 6778614941024316,
+      // Nation Permissions
+      6778614941024317, 6778614941024318, 6778614941024319, 6778614941024320, 6778614941024321,
+      // Address Permissions
+      6778614941024322, 6778614941024323, 6778614941024324, 6778614941024325, 6778614941024326,
+      // Branch Permissions
+      6778614941024327, 6778614941024328, 6778614941024329, 6778614941024330, 6778614941024331,
     ];
 
     const idList = permissionIds.join(',');

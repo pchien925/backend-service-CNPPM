@@ -21,6 +21,7 @@ import { TagModule } from './modules/tag/tag.module';
 import { FoodModule } from './modules/food/food.module';
 import { ComboModule } from './modules/combo/combo.module';
 import { UserContextHelper } from './shared/context/user-context.helper';
+import { NationModule } from './modules/nation/nation.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UserContextHelper } from './shared/context/user-context.helper';
     TagModule,
     FoodModule,
     ComboModule,
+    NationModule,
   ],
   providers: [
     {
