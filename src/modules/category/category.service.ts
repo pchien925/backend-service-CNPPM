@@ -1,21 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import {
-  STATUS_ACTIVE,
-  STATUS_DELETE,
-  STATUS_INACTIVE,
-  STATUS_PENDING,
-} from 'src/constants/app.constant';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
-import { ILike, In, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, ILike, IsNull, Not, Repository } from 'typeorm';
+import { CategoryMapper } from './category.mapper';
 import { CategoryQueryDto } from './dtos/category-query.dto';
 import { CategoryDto } from './dtos/category.dto';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { Category } from './entities/category.entity';
-import { CategoryMapper } from './category.mapper';
 import { CategorySpecification } from './specification/category.specification';
 
 @Injectable()
@@ -23,6 +18,8 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   async create(dto: CreateCategoryDto): Promise<void> {
@@ -152,28 +149,48 @@ export class CategoryService {
   }
 
   async delete(id: string): Promise<void> {
-    const categoryToDelete = await this.categoryRepo.findOneBy({
-      id,
-      status: Not(STATUS_DELETE),
-    });
+    const categoryToDelete = await this.categoryRepo.findOneBy({ id });
 
     if (!categoryToDelete) {
       throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
     }
-
-    await this.recursiveSoftDelete(id);
+    try {
+      await this.recursiveHardDelete(id);
+    } catch (error) {
+      if (error.message.includes('Foreign Key')) {
+        throw new BadRequestException(
+          `Category cannot be deleted as it is currently in use by active Food or Combo items.`,
+          ErrorCode.CATEGORY_ERROR_IN_USED,
+        );
+      }
+      throw error;
+    }
   }
 
-  private async recursiveSoftDelete(categoryId: string): Promise<void> {
-    const children = await this.categoryRepo.find({
-      where: { parent: { id: categoryId } },
-      select: ['id'],
-    });
+  private async recursiveHardDelete(categoryId: string): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    for (const child of children) {
-      await this.recursiveSoftDelete(child.id);
+    try {
+      const children = await queryRunner.manager.find(Category, {
+        where: { parent: { id: categoryId } },
+        select: ['id'],
+      });
+
+      for (const child of children) {
+        await this.recursiveHardDelete(child.id);
+      }
+
+      await queryRunner.manager.delete(Category, categoryId);
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(`Error during recursive hard delete for Category ID ${categoryId}:`, error);
+      throw new Error(`Failed to perform recursive hard delete for category.`);
+    } finally {
+      await queryRunner.release();
     }
-
-    await this.categoryRepo.update({ id: categoryId }, { status: STATUS_DELETE });
   }
 }
