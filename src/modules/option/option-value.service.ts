@@ -56,7 +56,7 @@ export class OptionValueService {
   }
 
   async findAllByOption(query: OptionValueQueryDto): Promise<OptionValueDto[]> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 0, limit = 10 } = query;
 
     const filterSpec = new OptionValueSpecification(query);
     const where = filterSpec.toWhere();
@@ -64,7 +64,7 @@ export class OptionValueService {
     const entities = await this.optionValueRepo.find({
       where,
       order: { ordering: 'ASC', id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 

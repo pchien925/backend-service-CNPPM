@@ -40,7 +40,7 @@ export class OptionService {
   }
 
   async findAll(query: OptionQueryDto): Promise<ResponseListDto<OptionDto[]>> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 0, limit = 10 } = query;
 
     const spec = new OptionSpecification(query);
     const where = spec.toWhere();
@@ -48,7 +48,7 @@ export class OptionService {
     const [entities, totalElements] = await this.optionRepo.findAndCount({
       where,
       order: { id: 'DESC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 

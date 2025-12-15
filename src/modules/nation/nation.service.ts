@@ -115,7 +115,7 @@ export class NationService {
   }
 
   async findAll(query: NationQueryDto): Promise<NationDto[]> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 0, limit = 10 } = query;
 
     const filterSpec = new NationSpecification(query);
     const where = filterSpec.toWhere();
@@ -124,7 +124,7 @@ export class NationService {
       where,
       //   relations: ['parent'],
       order: { name: 'ASC', id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 

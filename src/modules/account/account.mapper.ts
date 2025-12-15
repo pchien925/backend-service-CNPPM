@@ -36,6 +36,7 @@ export class AccountMapper {
       email: entity.email,
       fullName: entity.fullName,
       phone: entity.phone,
+      isSuperAdmin: entity.isSuperAdmin,
       group: entity.group ? GroupMapper.toResponse(entity.group) : null,
       avatarPath: entity.avatarPath,
     };
@@ -49,6 +50,7 @@ export class AccountMapper {
       fullName: entity.fullName,
       phone: entity.phone,
       avatarPath: entity.avatarPath,
+      isSuperAdmin: entity.isSuperAdmin,
       group: entity.group ? GroupMapper.toDetailResponse(entity.group) : null,
     };
   }

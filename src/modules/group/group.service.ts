@@ -28,7 +28,7 @@ export class GroupService {
   }
 
   async findAll(query: GroupQueryDto): Promise<ResponseListDto<GroupDto[]>> {
-    const { page = 1, limit = 10, name, description, kind } = query;
+    const { page = 0, limit, name, description, kind } = query;
 
     const where: any = {};
     if (name) where.name = ILike(`%${name}%`);
@@ -39,7 +39,7 @@ export class GroupService {
       where,
       relations: ['permissions'],
       order: { id: 'DESC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 
