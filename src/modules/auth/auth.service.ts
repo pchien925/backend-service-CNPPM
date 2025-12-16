@@ -66,6 +66,7 @@ export class AuthService {
     account.otpCode = otpCode;
     account.otpExpiresAt = otpExpiresAt;
     account.status = STATUS_PENDING;
+    account.password = await hashPassword(dto.password);
 
     try {
       await this.emailService.sendOtpEmail(dto.email, otpCode, dto.fullName);
