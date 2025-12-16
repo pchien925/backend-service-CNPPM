@@ -12,6 +12,7 @@ import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { Category } from './entities/category.entity';
 import { CategorySpecification } from './specification/category.specification';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class CategoryService {
@@ -63,13 +64,13 @@ export class CategoryService {
     await this.categoryRepo.save(entity);
   }
 
-  async findAll(query: CategoryQueryDto): Promise<CategoryDto[]> {
+  async findAll(query: CategoryQueryDto): Promise<ResponseListDto<CategoryDto[]>> {
     const { page = 0, limit = 10 } = query;
 
     const filterSpec = new CategorySpecification(query);
     const where = filterSpec.toWhere();
 
-    const entities = await this.categoryRepo.find({
+    const [entities, totalElements] = await this.categoryRepo.findAndCount({
       where,
       relations: ['parent'],
       order: { ordering: 'ASC', id: 'ASC' },
@@ -77,7 +78,8 @@ export class CategoryService {
       take: limit,
     });
 
-    return CategoryMapper.toResponseList(entities);
+    const content = CategoryMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<CategoryDto> {

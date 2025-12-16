@@ -33,7 +33,7 @@ export class OptionController {
     return ApiResponse.success(options, 'Get list options successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('OPT_V')
   @ApiOperation({ summary: 'Get option detail (with values)' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<OptionDto>> {

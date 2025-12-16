@@ -77,4 +77,8 @@ export class FoodMapper {
       options: [],
     };
   }
+
+  static toResponseList(entities: Food[]): FoodDto[] {
+    return entities.map(entity => this.toFoodListResponse(entity));
+  }
 }

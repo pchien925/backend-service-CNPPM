@@ -18,6 +18,7 @@ import { FoodTag } from './entities/food-tag.entity';
 import { Food } from './entities/food.entity';
 import { FoodMapper } from './food.mapper';
 import { FoodSpecification } from './specification/food.specification';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class FoodService {
@@ -118,13 +119,13 @@ export class FoodService {
     }
   }
 
-  async findAll(query: FoodQueryDto): Promise<FoodDto[]> {
+  async findAll(query: FoodQueryDto): Promise<ResponseListDto<FoodDto[]>> {
     const { page = 0, limit = 10 } = query;
 
     const filterSpec = new FoodSpecification(query);
     const where = filterSpec.toWhere();
 
-    const foods = await this.foodRepo.find({
+    const [entities, totalElements] = await this.foodRepo.findAndCount({
       where,
       relations: ['category', 'foodTags.tag'],
       order: { id: 'ASC' },
@@ -132,7 +133,8 @@ export class FoodService {
       take: limit,
     });
 
-    return foods.map(food => FoodMapper.toFoodListResponse(food));
+    const content = FoodMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async delete(id: string): Promise<void> {

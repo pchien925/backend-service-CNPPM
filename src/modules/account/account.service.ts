@@ -13,6 +13,9 @@ import { AccountMapper } from './account.mapper';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { Account } from './entities/account.entity';
+import { AccountSpecification } from './specification/account.specification';
+import { AccountQueryDto } from './dtos/account-query.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class AccountService {
@@ -21,9 +24,23 @@ export class AccountService {
     @InjectRepository(Group) private readonly groupRepo: Repository<Group>,
   ) {}
 
-  async list(): Promise<AccountDto[]> {
-    const accounts = await this.accountRepo.find({ relations: ['group'] });
-    return AccountMapper.toResponseList(accounts);
+  async findAll(query: AccountQueryDto): Promise<ResponseListDto<AccountDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const spec = new AccountSpecification(query);
+    const where = spec.toWhere();
+
+    const [entities, totalElements] = await this.accountRepo.findAndCount({
+      where,
+      relations: ['group'],
+      order: { id: 'ASC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = AccountMapper.toResponseList(entities);
+
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async getAccountById(id: string): Promise<AccountDto> {
@@ -33,7 +50,7 @@ export class AccountService {
     });
 
     if (!account) {
-      throw new NotFoundException('Tài khoản không tồn tại', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+      throw new NotFoundException('Account not found', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
     }
 
     return AccountMapper.toDetailResponse(account);

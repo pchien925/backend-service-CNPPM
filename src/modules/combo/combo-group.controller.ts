@@ -8,6 +8,7 @@ import { ComboGroupDto } from './dtos/combo-group.dto';
 import { CreateComboGroupDto } from './dtos/create-combo-group.dto';
 import { UpdateComboGroupDto } from './dtos/update-combo-group.dto';
 import { ComboGroupQueryDto } from './dtos/combo-group.query.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('ComboGroup')
 @ApiController('combo-group', { auth: true })
@@ -25,12 +26,14 @@ export class ComboGroupController {
   @Get('list')
   @Permissions('COM_GR_L')
   @ApiOperation({ summary: 'Get list of groups by Combo ID' })
-  async findAllByCombo(@Query() query: ComboGroupQueryDto): Promise<ApiResponse<ComboGroupDto[]>> {
+  async findAllByCombo(
+    @Query() query: ComboGroupQueryDto,
+  ): Promise<ApiResponse<ResponseListDto<ComboGroupDto[]>>> {
     const groups = await this.comboGroupService.findAll(query);
     return ApiResponse.success(groups, 'Get list combo groups successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('COM_GR_V')
   @ApiOperation({ summary: 'Get combo group detail' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the combo group' })

@@ -8,6 +8,7 @@ import { CategoryQueryDto } from './dtos/category-query.dto';
 import { CategoryDto } from './dtos/category.dto';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Category')
 @ApiController('category', { auth: true })
@@ -25,12 +26,14 @@ export class CategoryController {
   @Get('/list')
   @Permissions('CAT_L')
   @ApiOperation({ summary: 'Get list of categories (with filtering and pagination)' })
-  async findAll(@Query() query: CategoryQueryDto): Promise<ApiResponse<CategoryDto[]>> {
+  async findAll(
+    @Query() query: CategoryQueryDto,
+  ): Promise<ApiResponse<ResponseListDto<CategoryDto[]>>> {
     const categories = await this.categoryService.findAll(query);
     return ApiResponse.success(categories, 'Get list categories successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('CAT_V')
   @ApiOperation({ summary: 'Get category detail' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<CategoryDto>> {

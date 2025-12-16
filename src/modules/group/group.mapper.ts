@@ -1,6 +1,7 @@
 import { PermissionMapper } from '../permission/permission.mapper';
 import { CreateGroupDto } from './dtos/create-group.dto';
 import { GroupDto } from './dtos/group.dto';
+import { UpdateGroupDto } from './dtos/update-group.dto';
 import { Group } from './entities/group.entity';
 
 export class GroupMapper {
@@ -9,6 +10,14 @@ export class GroupMapper {
     entity.name = dto.name;
     entity.kind = dto.kind;
     entity.description = dto.description;
+    return entity;
+  }
+
+  static toEntityFromUpdate(entity: Group, dto: UpdateGroupDto): Group {
+    if (dto.name) entity.name = dto.name;
+    if (dto.kind !== undefined) entity.kind = dto.kind;
+    if (dto.description !== undefined) entity.description = dto.description;
+    if (dto.status !== undefined) entity.status = dto.status;
     return entity;
   }
 
