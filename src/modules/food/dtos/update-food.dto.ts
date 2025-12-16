@@ -13,7 +13,7 @@ import { FoodOptionPayloadDto } from './food-option-payload.dto';
 
 export class UpdateFoodDto {
   @ApiProperty()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'ID cannot be null' })
   @IsString()
   id!: string;
 

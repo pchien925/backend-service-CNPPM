@@ -16,6 +16,7 @@ import { Account } from './entities/account.entity';
 import { AccountSpecification } from './specification/account.specification';
 import { AccountQueryDto } from './dtos/account-query.dto';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
+import { UpdateAccountDto } from './dtos/update-account.dto';
 
 @Injectable()
 export class AccountService {
@@ -47,6 +48,19 @@ export class AccountService {
     const account = await this.accountRepo.findOne({
       where: { id: id },
       relations: ['group', 'group.permissions'],
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account not found', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+    }
+
+    return AccountMapper.toDetailResponse(account);
+  }
+
+  async findOne(id: string): Promise<AccountDto> {
+    const account = await this.accountRepo.findOne({
+      where: { id: id },
+      relations: ['group'],
     });
 
     if (!account) {
@@ -125,7 +139,34 @@ export class AccountService {
     await this.accountRepo.save(account);
   }
 
-  async deleteAccount(id: string): Promise<void> {
+  async update(dto: UpdateAccountDto): Promise<void> {
+    const account = await this.accountRepo.findOne({
+      where: { id: dto.id },
+      relations: ['group'],
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account not found', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+    }
+
+    AccountMapper.toEntityFromUpdate(account, dto);
+
+    if (dto.password) {
+      account.password = await hashPassword(dto.password);
+    }
+
+    if (dto.groupId) {
+      const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
+      if (!group) {
+        throw new NotFoundException('Group not found', ErrorCode.GROUP_ERROR_NOT_FOUND);
+      }
+      account.group = group;
+    }
+
+    await this.accountRepo.save(account);
+  }
+
+  async delete(id: string): Promise<void> {
     const account = await this.accountRepo.findOne({ where: { id } });
     if (!account) {
       throw new NotFoundException('Account not found');

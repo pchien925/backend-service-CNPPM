@@ -14,9 +14,6 @@ export class AccountMapper {
     entity.fullName = dto.fullName;
     entity.phone = dto.phone;
     entity.avatarPath = dto.avatarPath;
-    if (dto.groupId) {
-      entity.group = { id: dto.groupId } as Group;
-    }
     return entity;
   }
 
@@ -26,6 +23,7 @@ export class AccountMapper {
     if (dto.fullName !== undefined) entity.fullName = dto.fullName;
     if (dto.phone !== undefined) entity.phone = dto.phone;
     if (dto.avatarPath !== undefined) entity.avatarPath = dto.avatarPath;
+    if (dto.status !== undefined) entity.status = dto.status;
     return entity;
   }
 
@@ -37,6 +35,7 @@ export class AccountMapper {
       fullName: entity.fullName,
       phone: entity.phone,
       isSuperAdmin: entity.isSuperAdmin,
+      status: entity.status,
       group: entity.group ? GroupMapper.toResponse(entity.group) : null,
       avatarPath: entity.avatarPath,
     };
@@ -51,6 +50,7 @@ export class AccountMapper {
       phone: entity.phone,
       avatarPath: entity.avatarPath,
       isSuperAdmin: entity.isSuperAdmin,
+      status: entity.status,
       group: entity.group ? GroupMapper.toDetailResponse(entity.group) : null,
     };
   }

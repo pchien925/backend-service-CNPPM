@@ -635,7 +635,7 @@ export class Init1764776438514 implements MigrationInterface {
             (6778614941024260, 'Delete an account', '/v1/account/delete', 'Delete account both customer and admin', 'Account', 0, 'ACC_D', 1, 'Admin', '2020-06-24 02:21:34', 'Admin', '2020-06-24 02:21:34'),
             (6778614941024261, 'Create admin account', '/v1/account/create_admin', 'Create an admin account', 'Account', 0, 'ACC_C_AD', 1, 'Admin', '2020-06-24 02:24:17', 'Admin', '2020-06-24 02:24:17'),
             (6778614941024262, 'Update a profile admin', '/v1/account/update_profile_admin', 'Update a profile admin', 'Account', 0, 'ACC_U_PROFILE_AD', 1, 'Admin', '2020-06-24 05:08:15', 'Admin', '2020-06-24 05:08:15'),
-            (6778614941024263, 'Update a admin account', '/v1/account/update_admin', 'Update a admin account', 'Account', 0, 'ACC_U_AD', 1, 'Admin', '2020-06-24 05:09:14', 'Admin', '2020-06-24 05:09:14'),
+            (6778614941024263, 'Update a account', '/v1/account/update', 'Update a admin account', 'Account', 0, 'ACC_U', 1, 'Admin', '2020-06-24 05:09:14', 'Admin', '2020-06-24 05:09:14'),
             (6778614941024270, 'Upload file', '/v1/file/upload', 'Upload file', 'file', 0, 'FILE_U', 1, 'admin', '2022-09-21 04:34:33', 'admin', '2022-09-21 04:34:33'),
             (6778614941024271, 'Create group permission', '/v1/group/create', 'Create a group', 'Permission', 0, 'GR_C', 1, 'Admin', '2020-06-24 04:57:08', 'Admin', '2020-06-24 04:57:08'),
             (6778614941024272, 'Get detail group permission', '/v1/group/get', 'Get detail a group permission', 'Permission', 0, 'GR_V', 1, 'Admin', '2020-06-24 04:57:34', 'Admin', '2020-06-24 04:57:34'),

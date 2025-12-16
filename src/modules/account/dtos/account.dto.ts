@@ -8,5 +8,6 @@ export class AccountDto {
   fullName: string;
   avatarPath?: string;
   isSuperAdmin: boolean;
+  status: number;
   group?: GroupDto;
 }

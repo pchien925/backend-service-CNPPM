@@ -1,4 +1,4 @@
-import { Body, Delete, Get, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Delete, Get, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
@@ -8,6 +8,7 @@ import { AccountQueryDto } from './dtos/account-query.dto';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
+import { UpdateAccountDto } from './dtos/update-account.dto';
 
 @ApiController('account', { auth: true })
 export class AccountController {
@@ -28,27 +29,35 @@ export class AccountController {
     return ApiResponse.success(account, 'Get profile successfully', HttpStatus.OK);
   }
 
-  @Post('create')
-  @Permissions('ACC_C')
+  @Get('get/:id')
+  @Permissions('ACC_V')
   @ApiOperation({ summary: 'Create user account' })
-  async create(@Param('id') id: string): Promise<ApiResponse<AccountDto>> {
-    const account = await this.accountService.getAccountById(id);
+  async get(@Param('id') id: string): Promise<ApiResponse<AccountDto>> {
+    const account = await this.accountService.findOne(id);
     return ApiResponse.success(account, 'Get account successfully');
   }
 
-  @Post('get/"id')
+  @Post('create')
   @Permissions('ACC_C')
   @ApiOperation({ summary: 'Create user account' })
-  async get(@Body() dto: CreateAccountDto): Promise<ApiResponse<void>> {
+  async create(@Body() dto: CreateAccountDto): Promise<ApiResponse<void>> {
     await this.accountService.create(dto);
     return ApiResponse.successMessage('User created successfully');
+  }
+
+  @Put('update')
+  @Permissions('ACC_U')
+  @ApiOperation({ summary: 'Update user account' })
+  async update(@Body() dto: UpdateAccountDto): Promise<ApiResponse<void>> {
+    await this.accountService.update(dto);
+    return ApiResponse.successMessage('User updated successfully');
   }
 
   @Delete('delete/:id')
   @Permissions('ACC_D')
   @ApiOperation({ summary: 'Delete user account' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
-    await this.accountService.deleteAccount(id);
+    await this.accountService.delete(id);
     return ApiResponse.successMessage('User deleted successfully');
   }
 }
