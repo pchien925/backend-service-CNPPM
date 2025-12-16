@@ -12,6 +12,7 @@ import { UpdateTagDto } from './dtos/update-tag.dto';
 import { Tag } from './entities/tag.entity';
 import { TagSpecification } from './specification/tag.specification';
 import { TagMapper } from './tag.mapper';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class TagService {
@@ -33,20 +34,21 @@ export class TagService {
     await this.tagRepo.save(entity);
   }
 
-  async findAll(query: TagQueryDto): Promise<TagDto[]> {
+  async findAll(query: TagQueryDto): Promise<ResponseListDto<TagDto[]>> {
     const { page = 0, limit = 10 } = query;
 
     const filterSpec = new TagSpecification(query);
     const where = filterSpec.toWhere();
 
-    const entities = await this.tagRepo.find({
+    const [entities, totalElements] = await this.tagRepo.findAndCount({
       where,
       order: { id: 'ASC' },
       skip: page * limit,
       take: limit,
     });
 
-    return TagMapper.toResponseList(entities);
+    const content = TagMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<TagDto> {

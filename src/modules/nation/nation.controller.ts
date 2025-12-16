@@ -8,6 +8,7 @@ import { NationQueryDto } from './dtos/nation-query.dto';
 import { NationDto } from './dtos/nation.dto';
 import { UpdateNationDto } from './dtos/update-nation.dto';
 import { NationService } from './nation.service';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Nation')
 @ApiController('nation', { auth: true })
@@ -24,13 +25,15 @@ export class NationController {
 
   @Get('/list')
   @Permissions('NAT_L')
-  @ApiOperation({ summary: 'Get list of geographic units (with filtering and pagination)' })
-  async findAll(@Query() query: NationQueryDto): Promise<ApiResponse<NationDto[]>> {
-    const nations = await this.nationService.findAll(query);
-    return ApiResponse.success(nations, 'Get list nations successfully');
+  @ApiOperation({ summary: 'Get list of geographic units' })
+  async findAll(
+    @Query() query: NationQueryDto,
+  ): Promise<ApiResponse<ResponseListDto<NationDto[]>>> {
+    const result = await this.nationService.findAll(query);
+    return ApiResponse.success(result, 'Get list nations successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('NAT_V')
   @ApiOperation({ summary: 'Get geographic unit detail' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<NationDto>> {

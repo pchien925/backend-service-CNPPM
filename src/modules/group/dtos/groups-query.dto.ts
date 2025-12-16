@@ -11,12 +11,11 @@ export class GroupQueryDto extends Paginated {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString({ message: 'Description must be a string' })
-  @IsNotEmpty({ message: 'Description cannot be empty if provided' })
-  description?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
   @IsInt({ message: 'Kind must be an integer' })
   kind?: number;
+
+  @ApiPropertyOptional({ description: 'Filter by status' })
+  @IsInt()
+  @IsOptional()
+  status?: number;
 }

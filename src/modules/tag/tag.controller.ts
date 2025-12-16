@@ -8,6 +8,7 @@ import { TagQueryDto } from './dtos/tag-query.dto';
 import { TagDto } from './dtos/tag.dto';
 import { UpdateTagDto } from './dtos/update-tag.dto';
 import { TagService } from './tag.service';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Tag')
 @ApiController('tag', { auth: true })
@@ -25,12 +26,11 @@ export class TagController {
   @Get('/list')
   @Permissions('TAG_L')
   @ApiOperation({ summary: 'Get list of all Tags' })
-  async findAll(@Query() query: TagQueryDto): Promise<ApiResponse<TagDto[]>> {
-    const tags = await this.tagService.findAll(query);
-    return ApiResponse.success(tags, 'Get list Tags successfully');
+  async findAll(@Query() query: TagQueryDto): Promise<ApiResponse<ResponseListDto<TagDto[]>>> {
+    const result = await this.tagService.findAll(query);
+    return ApiResponse.success(result, 'Get list Tags successfully');
   }
-
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('TAG_V')
   @ApiOperation({ summary: 'Get Tag detail' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<TagDto>> {

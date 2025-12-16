@@ -15,6 +15,7 @@ import { UpdateComboDto } from './dtos/update-combo.dto';
 import { ComboTag } from './entities/combo-tag.entity';
 import { Combo } from './entities/combo.entity';
 import { ComboSpecification } from './specification/combo.specification';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class ComboService {
@@ -72,12 +73,12 @@ export class ComboService {
     });
   }
 
-  async findAll(query: ComboQueryDto): Promise<ComboDto[]> {
+  async findAll(query: ComboQueryDto): Promise<ResponseListDto<ComboDto[]>> {
     const { page = 0, limit = 10 } = query;
     const filterSpec = new ComboSpecification(query);
     const where = filterSpec.toWhere();
 
-    const [entities] = await this.comboRepo.findAndCount({
+    const [entities, totalElements] = await this.comboRepo.findAndCount({
       where,
       relations: ['category', 'comboTags.tag'],
       order: { ordering: 'ASC', id: 'ASC' },
@@ -85,7 +86,8 @@ export class ComboService {
       take: limit,
     });
 
-    return ComboMapper.toResponseList(entities);
+    const content = ComboMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<ComboDto> {

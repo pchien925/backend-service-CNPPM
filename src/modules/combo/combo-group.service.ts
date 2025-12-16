@@ -15,6 +15,7 @@ import { ComboGroupItem } from './entities/combo-group-item.entity';
 import { ComboGroup } from './entities/combo-group.entity';
 import { Combo } from './entities/combo.entity';
 import { ComboGroupSpecification } from './specification/combo-group.specification';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class ComboGroupService {
@@ -69,12 +70,12 @@ export class ComboGroupService {
     });
   }
 
-  async findAll(query: ComboGroupQueryDto): Promise<ComboGroupDto[]> {
+  async findAll(query: ComboGroupQueryDto): Promise<ResponseListDto<ComboGroupDto[]>> {
     const { page = 0, limit = 1000 } = query;
     const filterSpec = new ComboGroupSpecification(query);
     const where = filterSpec.toWhere();
 
-    const [entities] = await this.comboGroupRepo.findAndCount({
+    const [entities, totalElements] = await this.comboGroupRepo.findAndCount({
       where,
       relations: [
         'combo',
@@ -90,7 +91,8 @@ export class ComboGroupService {
       take: limit,
     });
 
-    return ComboGroupMapper.toResponseList(entities);
+    const content = ComboGroupMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<ComboGroupDto> {

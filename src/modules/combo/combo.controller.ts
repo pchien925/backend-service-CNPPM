@@ -8,6 +8,7 @@ import { ComboQueryDto } from './dtos/combo-query.dto';
 import { ComboDto } from './dtos/combo.dto';
 import { CreateComboDto } from './dtos/create-combo.dto';
 import { UpdateComboDto } from './dtos/update-combo.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Combo')
 @ApiController('combo', { auth: true })
@@ -25,12 +26,12 @@ export class ComboController {
   @Get('list')
   @Permissions('COM_L')
   @ApiOperation({ summary: 'Get list of combos (with filtering and pagination)' })
-  async findAll(@Query() query: ComboQueryDto): Promise<ApiResponse<ComboDto[]>> {
-    const combos = await this.comboService.findAll(query);
-    return ApiResponse.success(combos, 'Get list combos successfully');
+  async findAll(@Query() query: ComboQueryDto): Promise<ApiResponse<ResponseListDto<ComboDto[]>>> {
+    const result = await this.comboService.findAll(query);
+    return ApiResponse.success(result, 'Get list combos successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('COM_V')
   @ApiOperation({ summary: 'Get combo detail' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<ComboDto>> {

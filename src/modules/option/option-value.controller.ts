@@ -8,6 +8,7 @@ import { OptionValueDto } from './dtos/option-value.dto';
 import { UpdateOptionValueDto } from './dtos/update-option-value.dto';
 import { OptionValueService } from './option-value.service';
 import { OptionValueQueryDto } from './dtos/option-value-query.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Option Value')
 @ApiController('option-value', { auth: true })
@@ -27,12 +28,12 @@ export class OptionValueController {
   @ApiOperation({ summary: 'Get all option values for a specific option' })
   async findAllByOption(
     @Query() query: OptionValueQueryDto,
-  ): Promise<ApiResponse<OptionValueDto[]>> {
-    const values = await this.optionValueService.findAllByOption(query);
-    return ApiResponse.success(values, 'Get list option values successfully');
+  ): Promise<ApiResponse<ResponseListDto<OptionValueDto[]>>> {
+    const result = await this.optionValueService.findAllByOption(query);
+    return ApiResponse.success(result, 'Get list option values successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('OPV_V')
   @ApiOperation({ summary: 'Get option value detail' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<OptionValueDto>> {

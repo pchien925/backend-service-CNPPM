@@ -18,6 +18,7 @@ import { UpdateNationDto } from './dtos/update-nation.dto';
 import { Nation } from './entities/nation.entity';
 import { NationMapper } from './nation.mapper';
 import { NationSpecification } from './specification/nation.specification';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class NationService {
@@ -114,21 +115,23 @@ export class NationService {
     await this.nationRepo.save(entity);
   }
 
-  async findAll(query: NationQueryDto): Promise<NationDto[]> {
+  async findAll(query: NationQueryDto): Promise<ResponseListDto<NationDto[]>> {
     const { page = 0, limit = 10 } = query;
 
     const filterSpec = new NationSpecification(query);
     const where = filterSpec.toWhere();
 
-    const entities = await this.nationRepo.find({
+    const [entities, totalElements] = await this.nationRepo.findAndCount({
       where,
-      //   relations: ['parent'],
+      relations: ['parent'],
       order: { name: 'ASC', id: 'ASC' },
       skip: page * limit,
       take: limit,
     });
 
-    return NationMapper.toResponseList(entities);
+    const content = NationMapper.toResponseList(entities);
+
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<NationDto> {

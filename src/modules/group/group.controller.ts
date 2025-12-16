@@ -1,4 +1,4 @@
-import { Body, Get, Post, Query } from '@nestjs/common';
+import { Body, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
@@ -27,5 +27,13 @@ export class GroupController {
   async findAll(@Query() query: GroupQueryDto): Promise<ApiResponse<ResponseListDto<GroupDto[]>>> {
     const permissions = await this.groupService.findAll(query);
     return ApiResponse.success(permissions, 'Get list permissions successfully');
+  }
+
+  @Get('get/:id')
+  @Permissions('GR_V')
+  @ApiOperation({ summary: 'Get group detail by ID' })
+  async findOne(@Param('id') id: string): Promise<ApiResponse<GroupDto>> {
+    const group = await this.groupService.findOne(id);
+    return ApiResponse.success(group, 'Get group detail successfully');
   }
 }
