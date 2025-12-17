@@ -17,3 +17,7 @@ export const STATUS_DELETE = -2;
 export const NATION_KIND_WARD = 1;
 export const NATION_KIND_DISTRICT = 2;
 export const NATION_KIND_PROVINCE = 3;
+
+export const USER_KIND_ADMIN = 1;
+export const USER_KIND_MANAGER = 2;
+export const USER_KIND_CUSTOMER = 3;

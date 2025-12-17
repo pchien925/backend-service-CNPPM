@@ -30,9 +30,8 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
-    origin: ['https://abc.com', 'http://localhost:3000'],
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Server is running on port: ${process.env.PORT}`);

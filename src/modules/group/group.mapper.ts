@@ -27,6 +27,7 @@ export class GroupMapper {
       name: entity.name,
       description: entity.description,
       kind: entity.kind,
+      isSystemRole: entity.isSystemRole,
     };
   }
 
@@ -36,6 +37,7 @@ export class GroupMapper {
       name: entity.name,
       description: entity.description,
       kind: entity.kind,
+      isSystemRole: entity.isSystemRole,
       permissions: entity.permissions?.length
         ? PermissionMapper.toResponseList(entity.permissions)
         : [],

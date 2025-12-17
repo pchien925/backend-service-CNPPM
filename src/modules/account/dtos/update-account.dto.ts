@@ -24,6 +24,11 @@ export class UpdateAccountDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsNumber()
+  kind?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   fullName?: string;
 
   @ApiPropertyOptional()
