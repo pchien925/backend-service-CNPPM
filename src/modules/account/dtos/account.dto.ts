@@ -9,5 +9,6 @@ export class AccountDto {
   avatarPath?: string;
   isSuperAdmin: boolean;
   status: number;
+  kind: number;
   group?: GroupDto;
 }

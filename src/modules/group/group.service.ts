@@ -13,6 +13,7 @@ import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { GroupSpecification } from './specification/group.specification';
 import { UpdateGroupDto } from './dtos/update-group.dto';
+import { STATUS_ACTIVE } from 'src/constants/app.constant';
 
 @Injectable()
 export class GroupService {
@@ -49,6 +50,25 @@ export class GroupService {
     return new ResponseListDto(content, totalElements, limit);
   }
 
+  async autoComplete(query: GroupQueryDto): Promise<ResponseListDto<GroupDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const spec = new GroupSpecification(query);
+    const where = spec.toWhere();
+
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.groupRepo.findAndCount({
+      where,
+      order: { id: 'DESC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = GroupMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
+  }
+
   async findOne(id: string): Promise<GroupDto> {
     const entity = await this.groupRepo.findOne({
       where: { id },
@@ -59,7 +79,7 @@ export class GroupService {
       throw new NotFoundException('Group not found', ErrorCode.GROUP_ERROR_NOT_FOUND);
     }
 
-    return GroupMapper.toResponse(entity);
+    return GroupMapper.toDetailResponse(entity);
   }
 
   async update(dto: UpdateGroupDto): Promise<void> {

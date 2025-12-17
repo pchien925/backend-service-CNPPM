@@ -5,5 +5,6 @@ export class GroupDto {
   name: string;
   description: string | null;
   kind: number;
+  isSystemRole: boolean;
   permissions?: PermissionDto[];
 }
