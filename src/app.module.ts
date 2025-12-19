@@ -22,6 +22,7 @@ import { FoodModule } from './modules/food/food.module';
 import { ComboModule } from './modules/combo/combo.module';
 import { UserContextHelper } from './shared/context/user-context.helper';
 import { NationModule } from './modules/nation/nation.module';
+import { FileModule } from './modules/file/file.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { NationModule } from './modules/nation/nation.module';
     FoodModule,
     ComboModule,
     NationModule,
+    FileModule,
   ],
   providers: [
     {

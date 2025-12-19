@@ -15,7 +15,7 @@ import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 export class NationController {
   constructor(private readonly nationService: NationService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('NAT_C')
   @ApiOperation({ summary: 'Create new geographic unit (Province, District, Ward)' })
   async create(@Body() dto: CreateNationDto): Promise<ApiResponse<void>> {
@@ -23,13 +23,22 @@ export class NationController {
     return ApiResponse.successMessage('Nation created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('NAT_L')
   @ApiOperation({ summary: 'Get list of geographic units' })
   async findAll(
     @Query() query: NationQueryDto,
   ): Promise<ApiResponse<ResponseListDto<NationDto[]>>> {
     const result = await this.nationService.findAll(query);
+    return ApiResponse.success(result, 'Get list nations successfully');
+  }
+
+  @Get('/auto-complete')
+  @ApiOperation({ summary: 'Get list of geographic units' })
+  async autoComplete(
+    @Query() query: NationQueryDto,
+  ): Promise<ApiResponse<ResponseListDto<NationDto[]>>> {
+    const result = await this.nationService.autoComplete(query);
     return ApiResponse.success(result, 'Get list nations successfully');
   }
 
@@ -41,7 +50,7 @@ export class NationController {
     return ApiResponse.success(nation, 'Get nation detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('NAT_U')
   @ApiOperation({ summary: 'Update an existing geographic unit' })
   async update(@Body() dto: UpdateNationDto): Promise<ApiResponse<void>> {
@@ -49,7 +58,7 @@ export class NationController {
     return ApiResponse.successMessage('Nation updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('NAT_D')
   @ApiOperation({ summary: 'Delete a geographic unit (soft delete, applies to children too)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {

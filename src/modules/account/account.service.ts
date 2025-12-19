@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { STATUS_ACTIVE } from 'src/constants/app.constant';
+import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
@@ -165,12 +165,11 @@ export class AccountService {
 
     await this.accountRepo.save(account);
   }
-
   async delete(id: string): Promise<void> {
-    const account = await this.accountRepo.findOne({ where: { id } });
-    if (!account) {
-      throw new NotFoundException('Account not found');
+    const result = await this.accountRepo.update({ id }, { status: STATUS_DELETE });
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Account not found.`, ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
     }
-    await this.accountRepo.remove(account);
   }
 }

@@ -1,13 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Paginated } from 'src/shared/dtos/paginated.dto';
 
 export class OptionValueQueryDto extends Paginated {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @Min(1)
   optionId!: string;
 
   @ApiPropertyOptional()

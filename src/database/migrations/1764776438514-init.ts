@@ -204,6 +204,7 @@ export class Init1764776438514 implements MigrationInterface {
                 \`id\` bigint UNSIGNED NOT NULL,
                 \`name\` varchar(255) NOT NULL,
                 \`description\` text NULL,
+                \`image\` varchar(255) NULL,
                 PRIMARY KEY (\`id\`)
             ) ENGINE = InnoDB
         `);
@@ -625,7 +626,7 @@ export class Init1764776438514 implements MigrationInterface {
     await queryRunner.query(`
             INSERT INTO \`tbl_group\` (\`id\`, \`name\`, \`description\`, \`kind\`, \`is_system_role\`, \`status\`, \`created_by\`, \`created_date\`, \`modified_by\`, \`modified_date\`) VALUES
             (15, 'ROLE ADMIN', 'Role for administrator', 1, 1, 1, 'Admin', '2020-06-24 07:33:00', 'admin', '2023-04-10 06:47:43'),
-            (16, 'ROLE MANAGER', 'Role for manager account', 2, 1, 1, 'Admin', '2020-06-24 08:21:54', 'admin', '2023-06-28 16:22:25');
+            (16, 'ROLE MANAGER', 'Role for manager account', 2, 1, 1, 'Admin', '2020-06-24 08:21:54', 'admin', '2023-06-28 16:22:25'),
             (17, 'ROLE CUSTOMER', 'Role for customer account', 3, 1, 1, 'Admin', '2020-06-24 08:21:54', 'admin', '2023-06-28 16:22:25');
         `);
     await queryRunner.query(`

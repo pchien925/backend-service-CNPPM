@@ -15,7 +15,7 @@ import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 export class OptionValueController {
   constructor(private readonly optionValueService: OptionValueService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('OPV_C')
   @ApiOperation({ summary: 'Create new option value for a specific option' })
   async create(@Body() dto: CreateOptionValueDto): Promise<ApiResponse<void>> {
@@ -23,7 +23,7 @@ export class OptionValueController {
     return ApiResponse.successMessage('Option value created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('OPV_L')
   @ApiOperation({ summary: 'Get all option values for a specific option' })
   async findAllByOption(
@@ -41,7 +41,7 @@ export class OptionValueController {
     return ApiResponse.success(value, 'Get option value detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('OPV_U')
   @ApiOperation({ summary: 'Update an existing option value' })
   async update(@Body() dto: UpdateOptionValueDto): Promise<ApiResponse<void>> {
@@ -49,7 +49,7 @@ export class OptionValueController {
     return ApiResponse.successMessage('Option value updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('OPV_D')
   @ApiOperation({ summary: 'Delete an option value (soft delete)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {

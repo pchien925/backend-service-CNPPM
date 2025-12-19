@@ -15,7 +15,7 @@ import { OptionService } from './option.service';
 export class OptionController {
   constructor(private readonly optionService: OptionService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('OPT_C')
   @ApiOperation({ summary: 'Create new option' })
   async create(@Body() dto: CreateOptionDto): Promise<ApiResponse<void>> {
@@ -23,7 +23,7 @@ export class OptionController {
     return ApiResponse.successMessage('Option created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('OPT_L')
   @ApiOperation({ summary: 'Get all options' })
   async findAll(
@@ -41,7 +41,7 @@ export class OptionController {
     return ApiResponse.success(option, 'Get option detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('OPT_U')
   @ApiOperation({ summary: 'Update an existing option' })
   async update(@Body() dto: UpdateOptionDto): Promise<ApiResponse<void>> {
@@ -49,7 +49,7 @@ export class OptionController {
     return ApiResponse.successMessage('Option updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('OPT_D')
   @ApiOperation({ summary: 'Delete an option (soft delete)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {

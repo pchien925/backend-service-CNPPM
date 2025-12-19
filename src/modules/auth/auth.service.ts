@@ -37,7 +37,7 @@ export class AuthService {
       isSuperAdmin: user.isSuperAdmin,
     };
     const access_token = this.jwtService.sign(payload, { expiresIn: '7d' });
-    return { accessToken: access_token };
+    return { access_token: access_token, user_kind: user.kind };
   }
 
   async register(dto: RegisterDto): Promise<void> {

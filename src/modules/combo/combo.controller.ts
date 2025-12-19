@@ -47,7 +47,7 @@ export class ComboController {
     return ApiResponse.successMessage('Combo updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('COM_D')
   @ApiOperation({ summary: 'Delete a combo (soft delete)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {

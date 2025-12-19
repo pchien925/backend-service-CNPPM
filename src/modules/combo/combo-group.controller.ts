@@ -53,7 +53,7 @@ export class ComboGroupController {
     return ApiResponse.successMessage('Combo group updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('COM_GR_D')
   @ApiOperation({ summary: 'Delete a combo group (soft delete)' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the combo group to delete' })

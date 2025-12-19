@@ -81,10 +81,10 @@ export class TagService {
   }
 
   async delete(id: string): Promise<void> {
-    const result = await this.tagRepo.update({ id }, { status: STATUS_DELETE });
+    const result = await this.tagRepo.delete({ id });
 
     if (result.affected === 0) {
-      throw new NotFoundException(`Tag not found.`, ErrorCode.TAG_ERROR_NOT_FOUND);
+      throw new NotFoundException('Tag not found.', ErrorCode.TAG_ERROR_NOT_FOUND);
     }
   }
 }
