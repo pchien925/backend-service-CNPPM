@@ -15,7 +15,7 @@ import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('TAG_C')
   @ApiOperation({ summary: 'Create new Tag' })
   async create(@Body() dto: CreateTagDto): Promise<ApiResponse<void>> {
@@ -23,7 +23,7 @@ export class TagController {
     return ApiResponse.successMessage('Tag created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('TAG_L')
   @ApiOperation({ summary: 'Get list of all Tags' })
   async findAll(@Query() query: TagQueryDto): Promise<ApiResponse<ResponseListDto<TagDto[]>>> {
@@ -38,7 +38,7 @@ export class TagController {
     return ApiResponse.success(tag, 'Get Tag detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('TAG_U')
   @ApiOperation({ summary: 'Update an existing Tag' })
   async update(@Body() dto: UpdateTagDto): Promise<ApiResponse<void>> {
@@ -46,9 +46,9 @@ export class TagController {
     return ApiResponse.successMessage('Tag updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('/delete/:id')
   @Permissions('TAG_D')
-  @ApiOperation({ summary: 'Delete a Tag (soft delete)' })
+  @ApiOperation({ summary: 'Delete a Tag (hard delete)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.tagService.delete(id);
     return ApiResponse.successMessage('Tag deleted successfully');

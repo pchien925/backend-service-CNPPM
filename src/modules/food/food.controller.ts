@@ -15,7 +15,7 @@ import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 export class FoodController {
   constructor(private readonly foodService: FoodService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('FOOD_C')
   @ApiOperation({ summary: 'Create new food item with tags and options' })
   async create(@Body() dto: CreateFoodDto): Promise<ApiResponse<void>> {
@@ -23,7 +23,7 @@ export class FoodController {
     return ApiResponse.successMessage('Food created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('FOOD_L')
   @ApiOperation({ summary: 'Get list of Foods with filtering and pagination' })
   async findAll(@Query() query: FoodQueryDto): Promise<ApiResponse<ResponseListDto<FoodDto[]>>> {
@@ -39,7 +39,7 @@ export class FoodController {
     return ApiResponse.success(food, 'Get food detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('FOOD_U')
   @ApiOperation({ summary: 'Update an existing food item (tags and options are synchronized)' })
   async update(@Body() dto: UpdateFoodDto): Promise<ApiResponse<void>> {
@@ -47,7 +47,7 @@ export class FoodController {
     return ApiResponse.successMessage('Food updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('FOOD_D')
   @ApiOperation({ summary: 'Delete a food item (soft delete)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {

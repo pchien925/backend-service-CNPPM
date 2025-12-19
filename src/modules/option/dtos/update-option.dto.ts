@@ -15,6 +15,11 @@ export class UpdateOptionDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  image?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   description?: string;
 
   @ApiPropertyOptional()

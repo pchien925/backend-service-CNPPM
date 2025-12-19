@@ -134,6 +134,25 @@ export class NationService {
     return new ResponseListDto(content, totalElements, limit);
   }
 
+  async autoComplete(query: NationQueryDto): Promise<ResponseListDto<NationDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const filterSpec = new NationSpecification(query);
+    const where = filterSpec.toWhere();
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.nationRepo.findAndCount({
+      where,
+      order: { name: 'ASC', id: 'ASC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = NationMapper.toResponseList(entities);
+
+    return new ResponseListDto(content, totalElements, limit);
+  }
+
   async findOne(id: string): Promise<NationDto> {
     const entity = await this.nationRepo.findOne({
       where: { id, status: Not(STATUS_DELETE) },

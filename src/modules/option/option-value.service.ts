@@ -88,9 +88,12 @@ export class OptionValueService {
   }
 
   async update(dto: UpdateOptionValueDto): Promise<void> {
-    const entity = await this.optionValueRepo.findOneBy({
-      id: dto.id,
-      status: Not(STATUS_DELETE),
+    const entity = await this.optionValueRepo.findOne({
+      where: {
+        id: dto.id,
+        status: Not(STATUS_DELETE),
+      },
+      relations: ['option'],
     });
     if (!entity) {
       throw new NotFoundException(

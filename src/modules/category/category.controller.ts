@@ -15,7 +15,7 @@ import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('CAT_C')
   @ApiOperation({ summary: 'Create new category' })
   async create(@Body() dto: CreateCategoryDto): Promise<ApiResponse<void>> {
@@ -23,7 +23,7 @@ export class CategoryController {
     return ApiResponse.successMessage('Category created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('CAT_L')
   @ApiOperation({ summary: 'Get list of categories (with filtering and pagination)' })
   async findAll(
@@ -41,7 +41,7 @@ export class CategoryController {
     return ApiResponse.success(category, 'Get category detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('CAT_U')
   @ApiOperation({ summary: 'Update an existing category' })
   async update(@Body() dto: UpdateCategoryDto): Promise<ApiResponse<void>> {
@@ -49,7 +49,7 @@ export class CategoryController {
     return ApiResponse.successMessage('Category updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('CAT_D')
   @ApiOperation({ summary: 'Delete a category (soft delete, applies to children too)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
