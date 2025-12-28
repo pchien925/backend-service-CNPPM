@@ -127,7 +127,7 @@ export class FoodService {
 
     const [entities, totalElements] = await this.foodRepo.findAndCount({
       where,
-      relations: ['category', 'foodTags.tag'],
+      relations: ['category', 'foodTags.tag', 'foodOptions'],
       order: { id: 'ASC' },
       skip: page * limit,
       take: limit,

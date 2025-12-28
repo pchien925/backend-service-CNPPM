@@ -30,8 +30,8 @@ export class FoodQueryDto extends Paginated {
   @IsOptional()
   maxPrice?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by tag ID' })
+  @ApiPropertyOptional({ description: 'Filter by tag IDs', type: [String] })
   @IsOptional()
-  @IsString({ each: true, message: 'Tag ID must be a string' })
-  tagId?: string;
+  @IsString({ each: true })
+  tagIds?: string[];
 }

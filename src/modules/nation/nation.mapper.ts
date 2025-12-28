@@ -21,6 +21,7 @@ export class NationMapper {
   }
 
   static toResponse(entity: Nation): NationDto {
+    if (!entity) return null;
     const dto: NationDto = {
       id: entity.id,
       name: entity.name,
@@ -37,6 +38,7 @@ export class NationMapper {
   }
 
   static toResponseList(entities: Nation[]): NationDto[] {
+    if (!entities?.length) return [];
     return entities.map(entity => this.toResponse(entity));
   }
 }

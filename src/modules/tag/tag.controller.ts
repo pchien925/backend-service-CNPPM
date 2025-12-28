@@ -30,6 +30,12 @@ export class TagController {
     const result = await this.tagService.findAll(query);
     return ApiResponse.success(result, 'Get list Tags successfully');
   }
+  @Get('auto-complete')
+  @ApiOperation({ summary: 'Get auto complete of Tags' })
+  async autoComplete(@Query() query: TagQueryDto): Promise<ApiResponse<ResponseListDto<TagDto[]>>> {
+    const result = await this.tagService.autoComplete(query);
+    return ApiResponse.success(result, 'Get list Tags successfully');
+  }
   @Get('get/:id')
   @Permissions('TAG_V')
   @ApiOperation({ summary: 'Get Tag detail' })

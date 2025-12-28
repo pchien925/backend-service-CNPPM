@@ -17,10 +17,10 @@ export class CategoryDto {
   imageUrl: string | null = null;
 
   @ApiProperty()
-  ordering!: number;
+  ordering?: number;
 
   @ApiProperty()
-  status!: number;
+  status?: number;
 
   @ApiPropertyOptional({
     type: [CategoryDto],

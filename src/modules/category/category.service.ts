@@ -4,15 +4,16 @@ import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { DataSource, ILike, IsNull, Not, Repository } from 'typeorm';
 import { CategoryMapper } from './category.mapper';
 import { CategoryQueryDto } from './dtos/category-query.dto';
 import { CategoryDto } from './dtos/category.dto';
 import { CreateCategoryDto } from './dtos/create-category.dto';
+import { CategorySortItemDto } from './dtos/update-category-sort.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { Category } from './entities/category.entity';
 import { CategorySpecification } from './specification/category.specification';
-import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class CategoryService {
@@ -82,6 +83,26 @@ export class CategoryService {
     return new ResponseListDto(content, totalElements, limit);
   }
 
+  async autoComplete(query: CategoryQueryDto): Promise<ResponseListDto<CategoryDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const filterSpec = new CategorySpecification(query);
+    const where = filterSpec.toWhere();
+
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.categoryRepo.findAndCount({
+      where,
+      relations: ['parent'],
+      order: { ordering: 'ASC', id: 'ASC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = CategoryMapper.toBasicResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
+  }
+
   async findOne(id: string): Promise<CategoryDto> {
     const entity = await this.categoryRepo.findOne({
       where: { id, status: Not(STATUS_DELETE) },
@@ -148,6 +169,31 @@ export class CategoryService {
     const updatedEntity = CategoryMapper.toEntityFromUpdate(entity, dto);
     updatedEntity.parent = parentCategory;
     await this.categoryRepo.save(updatedEntity);
+  }
+
+  async updateSort(data: CategorySortItemDto[]): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await Promise.all(
+        data.map(item =>
+          queryRunner.manager.update(Category, { id: item.id }, { ordering: item.ordering }),
+        ),
+      );
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Update Sort Error:', error);
+      throw new BadRequestException(
+        'Failed to update category ordering',
+        ErrorCode.CATEGORY_ERROR_UPDATE_FAILED,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async delete(id: string): Promise<void> {

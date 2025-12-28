@@ -4,7 +4,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 export class UpdateCategoryDto {
   @ApiProperty({ description: 'ID of the category to update' })
   @IsNotEmpty({ message: 'ID cannot be null' })
-  @IsInt({ message: 'ID must be an integer' })
+  @IsString({ message: 'ID must be a string' })
   id!: string;
 
   @ApiPropertyOptional()

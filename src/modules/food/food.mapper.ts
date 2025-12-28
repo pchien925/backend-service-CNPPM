@@ -40,9 +40,7 @@ export class FoodMapper {
       ordering: entity.ordering,
       requirementType: entity.requirementType,
       maxSelect: entity.maxSelect,
-      optionValues: optionEntity.values?.length
-        ? OptionValueMapper.toResponseList(optionEntity.values)
-        : [],
+      optionValues: OptionValueMapper.toResponseList(entity.option.values),
     };
   }
 
@@ -57,8 +55,12 @@ export class FoodMapper {
       ordering: entity.ordering,
       status: entity.status,
       category: CategoryMapper.toResponse(entity.category),
-      tags: entity.foodTags ? entity.foodTags.map(tag => TagMapper.toResponse(tag.tag)) : [],
-      options: entity.foodOptions ? entity.foodOptions.map(this.toFoodOptionDetailDto) : [],
+      tags: entity.foodTags?.length
+        ? entity.foodTags.map(ft => TagMapper.toResponse(ft.tag)).filter(Boolean)
+        : [],
+      options: entity.foodOptions?.length
+        ? entity.foodOptions.map(opt => this.toFoodOptionDetailDto(opt)).filter(Boolean)
+        : [],
     };
   }
 
@@ -73,7 +75,9 @@ export class FoodMapper {
       ordering: entity.ordering,
       status: entity.status,
       category: CategoryMapper.toResponse(entity.category),
-      tags: entity.foodTags ? entity.foodTags.map(tag => TagMapper.toResponse(tag.tag)) : [],
+      tags: entity.foodTags?.length
+        ? entity.foodTags.map(ft => TagMapper.toResponse(ft.tag)).filter(Boolean)
+        : [],
       options: [],
     };
   }
