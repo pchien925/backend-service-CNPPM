@@ -25,6 +25,7 @@ export class CategoryMapper {
   }
 
   static toResponse(entity: Category): CategoryDto {
+    if (!entity) return null;
     const dto: CategoryDto = {
       id: entity.id,
       name: entity.name,
@@ -35,7 +36,6 @@ export class CategoryMapper {
       status: entity.status,
     };
 
-    // Ánh xạ các danh mục con một cách đệ quy (nếu chúng được load)
     if (entity.children) {
       dto.children = this.toResponseList(entity.children);
     }
@@ -43,7 +43,27 @@ export class CategoryMapper {
     return dto;
   }
 
+  static toBasicResponse(entity: Category): CategoryDto {
+    if (!entity) return null;
+    const dto: CategoryDto = {
+      id: entity.id,
+      name: entity.name,
+      description: entity.description ?? null,
+      kind: entity.kind,
+      imageUrl: entity.imageUrl ?? null,
+      ordering: entity.ordering,
+    };
+
+    return dto;
+  }
+
   static toResponseList(entities: Category[]): CategoryDto[] {
+    if (!entities?.length) return [];
     return entities.map(entity => this.toResponse(entity));
+  }
+
+  static toBasicResponseList(entities: Category[]): CategoryDto[] {
+    if (!entities?.length) return [];
+    return entities.map(entity => this.toBasicResponse(entity));
   }
 }

@@ -12,9 +12,9 @@ export class FoodDto {
   ordering!: number;
   status!: number;
 
-  category!: CategoryDto;
+  category?: CategoryDto;
 
-  tags!: TagDto[];
+  tags?: TagDto[];
 
-  options!: FoodOptionDto[];
+  options?: FoodOptionDto[];
 }

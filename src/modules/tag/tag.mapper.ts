@@ -19,6 +19,7 @@ export class TagMapper {
   }
 
   static toResponse(entity: Tag): TagDto {
+    if (!entity) return null;
     return {
       id: entity.id,
       name: entity.name,
@@ -28,6 +29,7 @@ export class TagMapper {
   }
 
   static toResponseList(entities: Tag[]): TagDto[] {
+    if (!entities?.length) return [];
     return entities.map(entity => this.toResponse(entity));
   }
 }

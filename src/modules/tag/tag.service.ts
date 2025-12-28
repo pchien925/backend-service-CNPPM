@@ -50,6 +50,23 @@ export class TagService {
     const content = TagMapper.toResponseList(entities);
     return new ResponseListDto(content, totalElements, limit);
   }
+  async autoComplete(query: TagQueryDto): Promise<ResponseListDto<TagDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const filterSpec = new TagSpecification(query);
+    const where = filterSpec.toWhere();
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.tagRepo.findAndCount({
+      where,
+      order: { id: 'ASC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = TagMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
+  }
 
   async findOne(id: string): Promise<TagDto> {
     const entity = await this.tagRepo.findOneBy({ id, status: STATUS_ACTIVE });
