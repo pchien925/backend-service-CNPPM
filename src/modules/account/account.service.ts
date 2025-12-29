@@ -17,6 +17,7 @@ import { AccountSpecification } from './specification/account.specification';
 import { AccountQueryDto } from './dtos/account-query.dto';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
 
 @Injectable()
 export class AccountService {
@@ -165,6 +166,58 @@ export class AccountService {
 
     await this.accountRepo.save(account);
   }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<void> {
+    const account = await this.accountRepo.findOne({
+      where: { id: userId, status: STATUS_ACTIVE },
+      select: ['id', 'email', 'password', 'fullName', 'phone', 'avatarPath'],
+    });
+
+    if (!account) {
+      throw new NotFoundException('Account not found', ErrorCode.ACCOUNT_ERROR_NOT_FOUND);
+    }
+
+    if (dto.newPassword) {
+      if (!dto.oldPassword) {
+        throw new BadRequestException(
+          'Old password is required',
+          ErrorCode.ACCOUNT_ERROR_INVALID_PASSWORD,
+        );
+      }
+
+      const isMatch = await verifyPassword(dto.oldPassword, account.password);
+      if (!isMatch) {
+        throw new BadRequestException(
+          'Old password is incorrect',
+          ErrorCode.ACCOUNT_ERROR_INVALID_PASSWORD,
+        );
+      }
+
+      account.password = await hashPassword(dto.newPassword);
+    }
+
+    if (dto.email && dto.email !== account.email) {
+      const existEmail = await this.accountRepo.findOne({
+        where: { email: dto.email },
+      });
+
+      if (existEmail) {
+        throw new BadRequestException(
+          'Email already exists',
+          ErrorCode.ACCOUNT_ERROR_USERNAME_EXISTED,
+        );
+      }
+
+      account.email = dto.email;
+    }
+
+    if (dto.fullName !== undefined) account.fullName = dto.fullName;
+    if (dto.phone !== undefined) account.phone = dto.phone;
+    if (dto.avatarPath !== undefined) account.avatarPath = dto.avatarPath;
+
+    await this.accountRepo.save(account);
+  }
+
   async delete(id: string): Promise<void> {
     const result = await this.accountRepo.update({ id }, { status: STATUS_DELETE });
 

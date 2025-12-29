@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Paginated } from 'src/shared/dtos/paginated.dto';
 
 export class ComboQueryDto extends Paginated {
@@ -28,8 +28,12 @@ export class ComboQueryDto extends Paginated {
   @IsNumber()
   maxPrice?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by tag ID' })
+  @ApiPropertyOptional({
+    description: 'Filter by tag IDs',
+    type: [String],
+  })
   @IsOptional()
-  @IsString({ each: true, message: 'Tag ID must be a string' })
-  tagId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  tagIds?: string[];
 }

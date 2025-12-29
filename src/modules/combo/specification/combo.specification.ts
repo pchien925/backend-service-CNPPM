@@ -1,6 +1,6 @@
 import { STATUS_ACTIVE } from 'src/constants/app.constant';
 import { BaseSpecification } from 'src/shared/specification/base.specification';
-import { And, FindOptionsWhere, ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { And, FindOptionsWhere, ILike, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { ComboQueryDto } from '../dtos/combo-query.dto';
 import { Combo } from '../entities/combo.entity';
 
@@ -14,18 +14,16 @@ export class ComboSpecification extends BaseSpecification<Combo> {
 
   public toWhere(): FindOptionsWhere<Combo> {
     const where: FindOptionsWhere<Combo> = {};
-    const { categoryId, name, status, minPrice, maxPrice, tagId } = this.query;
+    const { categoryId, name, status, minPrice, maxPrice, tagIds } = this.query;
 
     if (name) {
       where.name = ILike(`%${name}%`);
     }
 
-    // Filter by category ID
     if (categoryId) {
       where.category = { id: categoryId };
     }
 
-    // Filter by status, default to ACTIVE
     if (status !== undefined) {
       where.status = status;
     } else {
@@ -43,10 +41,10 @@ export class ComboSpecification extends BaseSpecification<Combo> {
       where.basePrice = LessThanOrEqual(maxPrice);
     }
 
-    if (tagId) {
+    if (tagIds?.length) {
       where.comboTags = {
         tag: {
-          id: tagId,
+          id: In(tagIds),
         },
       };
     }

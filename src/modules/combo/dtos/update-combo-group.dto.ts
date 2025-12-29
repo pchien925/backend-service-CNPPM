@@ -9,7 +9,6 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { CreateComboGroupItemDto } from './create-combo-group-item.dto';
 import { UpdateComboGroupItemDto } from './update-combo-group-item.dto';
 
 export class UpdateComboGroupDto {
@@ -55,17 +54,10 @@ export class UpdateComboGroupDto {
   @IsOptional()
   status?: number;
 
-  @ApiPropertyOptional({ description: 'Items to be updated' })
+  @ApiPropertyOptional({ type: [UpdateComboGroupItemDto] })
   @IsArray()
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => UpdateComboGroupItemDto)
-  updateItems?: UpdateComboGroupItemDto[];
-
-  @ApiPropertyOptional({ description: 'New items to be created' })
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => CreateComboGroupItemDto)
-  newItems?: CreateComboGroupItemDto[];
+  items?: UpdateComboGroupItemDto[];
 }

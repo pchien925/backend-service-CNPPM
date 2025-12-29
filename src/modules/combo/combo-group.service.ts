@@ -115,18 +115,15 @@ export class ComboGroupService {
   }
 
   async update(dto: UpdateComboGroupDto): Promise<void> {
-    const { id: groupId, comboId, updateItems, newItems } = dto;
+    const { id: groupId, comboId, items = [] } = dto;
 
     const groupEntity = await this.comboGroupRepo.findOne({
-      where: { id: groupId, combo: { id: comboId }, status: Not(STATUS_DELETE) },
+      where: { id: groupId, combo: { id: comboId } },
       relations: ['items'],
     });
 
     if (!groupEntity) {
-      throw new NotFoundException(
-        `Combo Group not found or does not belong to the Combo.`,
-        ErrorCode.COMBO_GROUP_ERROR_NOT_FOUND,
-      );
+      throw new NotFoundException(`Combo Group not found.`, ErrorCode.COMBO_GROUP_ERROR_NOT_FOUND);
     }
 
     await this.dataSource.transaction(async manager => {
@@ -136,52 +133,44 @@ export class ComboGroupService {
       const partialUpdate = ComboGroupMapper.toEntityPartialFromUpdate(dto);
       await comboGroupRepo.update({ id: groupId }, partialUpdate);
 
-      const currentItemIdsInRequest = new Set<string>();
-      if (updateItems && updateItems.length > 0) {
-        const foodIdsToCheck = updateItems.filter(i => i.foodId !== undefined).map(i => i.foodId!);
-        if (foodIdsToCheck.length > 0) {
-          await this.validateFoodItems(foodIdsToCheck);
-        }
-
-        for (const itemDto of updateItems) {
-          currentItemIdsInRequest.add(itemDto.id);
-          const updateData: Partial<ComboGroupItem> = {
-            extraPrice: itemDto.extraPrice,
-            ordering: itemDto.ordering,
-            status: itemDto.status,
-            food: itemDto.foodId !== undefined ? ({ id: itemDto.foodId } as Food) : undefined,
-          };
-
-          Object.keys(updateData).forEach(
-            key => updateData[key] === undefined && delete updateData[key],
-          );
-
-          await comboGroupItemRepo.update(
-            { id: itemDto.id, comboGroup: { id: groupId } },
-            updateData,
-          );
-        }
-      }
+      const itemsToUpdate = items.filter(item => item.id);
+      const itemsToCreate = items.filter(item => !item.id);
+      const requestItemIds = itemsToUpdate.map(i => i.id!);
 
       const itemsToSoftDelete = groupEntity.items
-        .filter(item => item.status !== STATUS_DELETE)
-        .filter(item => !currentItemIdsInRequest.has(item.id))
+        .filter(item => !requestItemIds.includes(item.id))
         .map(item => item.id);
 
-      //xóa mềm
       if (itemsToSoftDelete.length > 0) {
-        await comboGroupItemRepo.update({ id: In(itemsToSoftDelete) }, { status: STATUS_DELETE });
+        await comboGroupItemRepo.delete({
+          id: In(itemsToSoftDelete),
+        });
       }
 
-      if (newItems && newItems.length > 0) {
-        const foodMap = await this.validateFoodItems(newItems.map(i => i.foodId));
-        const newGroupItems = newItems.map(itemDto => {
-          const itemEntity = ComboGroupItemMapper.toEntityFromCreate(itemDto);
-          itemEntity.comboGroup = groupEntity;
-          itemEntity.food = foodMap.get(itemDto.foodId)!;
-          return itemEntity;
+      const allFoodIds = items.map(i => i.foodId);
+      const foodMap = await this.validateFoodItems(allFoodIds);
+
+      for (const itemDto of itemsToUpdate) {
+        await comboGroupItemRepo.update(
+          { id: itemDto.id, comboGroup: { id: groupId } },
+          {
+            extraPrice: itemDto.extraPrice,
+            ordering: itemDto.ordering,
+            food: foodMap.get(itemDto.foodId),
+          },
+        );
+      }
+
+      if (itemsToCreate.length > 0) {
+        const newEntities = itemsToCreate.map(itemDto => {
+          const entity = new ComboGroupItem();
+          entity.comboGroup = groupEntity;
+          entity.food = foodMap.get(itemDto.foodId)!;
+          entity.extraPrice = itemDto.extraPrice ?? 0;
+          entity.ordering = itemDto.ordering ?? 0;
+          return entity;
         });
-        await manager.save(newGroupItems);
+        await manager.save(newEntities);
       }
     });
   }

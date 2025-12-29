@@ -82,7 +82,22 @@ export class FoodMapper {
     };
   }
 
+  static toAutoCompleteResponse(entity: Food): FoodDto {
+    return {
+      id: entity.id,
+      name: entity.name,
+      description: entity.description ?? null,
+      basePrice: Number(entity.basePrice),
+      imageUrl: entity.imageUrl ?? null,
+      cookingTime: entity.cookingTime ?? null,
+    };
+  }
+
   static toResponseList(entities: Food[]): FoodDto[] {
     return entities.map(entity => this.toFoodListResponse(entity));
+  }
+
+  static toAutoCompleteResponseList(entities: Food[]): FoodDto[] {
+    return entities.map(entity => this.toAutoCompleteResponse(entity));
   }
 }
