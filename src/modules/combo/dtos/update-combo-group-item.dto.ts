@@ -21,9 +21,4 @@ export class UpdateComboGroupItemDto {
   @IsInt({ message: 'Ordering must be an integer' })
   @IsOptional()
   ordering?: number;
-
-  @ApiPropertyOptional({ description: 'Filter by status (1: Active, 0: Inactive)' })
-  @IsInt({ message: 'Status must be an integer' })
-  @IsOptional()
-  status?: number;
 }

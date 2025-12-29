@@ -9,6 +9,7 @@ import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
 
 @ApiController('account', { auth: true })
 export class AccountController {
@@ -51,6 +52,13 @@ export class AccountController {
   async update(@Body() dto: UpdateAccountDto): Promise<ApiResponse<void>> {
     await this.accountService.update(dto);
     return ApiResponse.successMessage('User updated successfully');
+  }
+
+  @Put('update-profile')
+  @ApiOperation({ summary: 'Update profile and/or change password' })
+  async updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto): Promise<ApiResponse<void>> {
+    await this.accountService.updateProfile(req.user.id, dto);
+    return ApiResponse.successMessage('Profile updated successfully');
   }
 
   @Delete('delete/:id')

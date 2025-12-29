@@ -31,6 +31,15 @@ export class FoodController {
     return ApiResponse.success(result, 'Get list Foods successfully');
   }
 
+  @Get('auto-complete')
+  @ApiOperation({ summary: 'Get list of Foods with filtering and pagination' })
+  async autoComplete(
+    @Query() query: FoodQueryDto,
+  ): Promise<ApiResponse<ResponseListDto<FoodDto[]>>> {
+    const result = await this.foodService.autoComplete(query);
+    return ApiResponse.success(result, 'Get list Foods successfully');
+  }
+
   @Get('get/:id')
   @Permissions('FOOD_V')
   @ApiOperation({ summary: 'Get food detail with all related tags and options' })

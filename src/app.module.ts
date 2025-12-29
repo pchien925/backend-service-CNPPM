@@ -23,6 +23,7 @@ import { ComboModule } from './modules/combo/combo.module';
 import { UserContextHelper } from './shared/context/user-context.helper';
 import { NationModule } from './modules/nation/nation.module';
 import { FileModule } from './modules/file/file.module';
+import { AddressModule } from './modules/address/address.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { FileModule } from './modules/file/file.module';
     ComboModule,
     NationModule,
     FileModule,
+    AddressModule,
   ],
   providers: [
     {
