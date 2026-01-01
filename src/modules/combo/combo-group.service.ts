@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
 import { Food } from 'src/modules/food/entities/food.entity';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { DataSource, In, Not, Repository } from 'typeorm';
 import { ComboGroupItemMapper } from './combo-group-item.mapper';
 import { ComboGroupMapper } from './combo-group.mapper';
+import { ComboGroupSortItemDto } from './dtos/combo-group-sort.dto';
 import { ComboGroupDto } from './dtos/combo-group.dto';
 import { ComboGroupQueryDto } from './dtos/combo-group.query.dto';
 import { CreateComboGroupDto } from './dtos/create-combo-group.dto';
@@ -15,7 +18,6 @@ import { ComboGroupItem } from './entities/combo-group-item.entity';
 import { ComboGroup } from './entities/combo-group.entity';
 import { Combo } from './entities/combo.entity';
 import { ComboGroupSpecification } from './specification/combo-group.specification';
-import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class ComboGroupService {
@@ -173,6 +175,31 @@ export class ComboGroupService {
         await manager.save(newEntities);
       }
     });
+  }
+
+  async updateSort(data: ComboGroupSortItemDto[]): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await Promise.all(
+        data.map(item =>
+          queryRunner.manager.update(ComboGroup, { id: item.id }, { ordering: item.ordering }),
+        ),
+      );
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Update Combo Group Sort Error:', error);
+      throw new BadRequestException(
+        'Failed to update combo group ordering',
+        ErrorCode.COMBO_GROUP_ERROR_UPDATE_FAILED,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async delete(id: string): Promise<void> {

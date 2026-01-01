@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Paginated } from 'src/shared/dtos/paginated.dto';
 
 export class ComboQueryDto extends Paginated {
@@ -33,7 +33,6 @@ export class ComboQueryDto extends Paginated {
     type: [String],
   })
   @IsOptional()
-  @IsArray()
   @IsString({ each: true })
   tagIds?: string[];
 }

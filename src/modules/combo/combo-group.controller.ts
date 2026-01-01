@@ -3,12 +3,13 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { ComboGroupService } from './combo-group.service';
+import { ComboGroupSortItemDto } from './dtos/combo-group-sort.dto';
 import { ComboGroupDto } from './dtos/combo-group.dto';
+import { ComboGroupQueryDto } from './dtos/combo-group.query.dto';
 import { CreateComboGroupDto } from './dtos/create-combo-group.dto';
 import { UpdateComboGroupDto } from './dtos/update-combo-group.dto';
-import { ComboGroupQueryDto } from './dtos/combo-group.query.dto';
-import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('ComboGroup')
 @ApiController('combo-group', { auth: true })
@@ -51,6 +52,14 @@ export class ComboGroupController {
   async update(@Body() dto: UpdateComboGroupDto): Promise<ApiResponse<void>> {
     await this.comboGroupService.update(dto);
     return ApiResponse.successMessage('Combo group updated successfully');
+  }
+
+  @Put('update-sort')
+  @Permissions('COM_GR_U')
+  @ApiOperation({ summary: 'Update combo groups ordering' })
+  async updateSort(@Body() dto: ComboGroupSortItemDto[]): Promise<ApiResponse<void>> {
+    await this.comboGroupService.updateSort(dto);
+    return ApiResponse.successMessage('Update order successfully');
   }
 
   @Delete('delete/:id')
