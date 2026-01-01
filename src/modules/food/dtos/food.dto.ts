@@ -11,10 +11,7 @@ export class FoodDto {
   cookingTime?: number | null = null;
   ordering?: number;
   status?: number;
-
   category?: CategoryDto;
-
   tags?: TagDto[];
-
   options?: FoodOptionDto[];
 }

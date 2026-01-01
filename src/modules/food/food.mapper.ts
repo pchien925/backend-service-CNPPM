@@ -1,12 +1,10 @@
 import { CategoryMapper } from '../category/category.mapper';
-import { OptionValueMapper } from '../option/option-value.mapper';
 import { TagMapper } from '../tag/tag.mapper';
 import { CreateFoodDto } from './dtos/create-food.dto';
-import { FoodOptionDto } from './dtos/food-option.dto';
 import { FoodDto } from './dtos/food.dto';
 import { UpdateFoodDto } from './dtos/update-food.dto';
-import { FoodOption } from './entities/food-option.entity';
 import { Food } from './entities/food.entity';
+import { FoodOptionMapper } from './food-option.mapper';
 
 export class FoodMapper {
   static toEntityFromCreate(dto: Partial<CreateFoodDto>): Food {
@@ -31,20 +29,8 @@ export class FoodMapper {
     return entity;
   }
 
-  static toFoodOptionDetailDto(entity: FoodOption): FoodOptionDto {
-    const optionEntity = entity.option;
-
-    return {
-      id: optionEntity.id,
-      name: optionEntity.name,
-      ordering: entity.ordering,
-      requirementType: entity.requirementType,
-      maxSelect: entity.maxSelect,
-      optionValues: OptionValueMapper.toResponseList(entity.option.values),
-    };
-  }
-
   static toResponse(entity: Food): FoodDto {
+    if (!entity) return null;
     return {
       id: entity.id,
       name: entity.name,
@@ -59,12 +45,13 @@ export class FoodMapper {
         ? entity.foodTags.map(ft => TagMapper.toResponse(ft.tag)).filter(Boolean)
         : [],
       options: entity.foodOptions?.length
-        ? entity.foodOptions.map(opt => this.toFoodOptionDetailDto(opt)).filter(Boolean)
+        ? FoodOptionMapper.toResponseList(entity.foodOptions)
         : [],
     };
   }
 
   static toFoodListResponse(entity: Food): FoodDto {
+    if (!entity) return null;
     return {
       id: entity.id,
       name: entity.name,
@@ -83,6 +70,7 @@ export class FoodMapper {
   }
 
   static toAutoCompleteResponse(entity: Food): FoodDto {
+    if (!entity) return null;
     return {
       id: entity.id,
       name: entity.name,
