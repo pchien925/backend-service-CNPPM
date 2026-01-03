@@ -33,6 +33,15 @@ export class OptionController {
     return ApiResponse.success(options, 'Get list options successfully');
   }
 
+  @Get('auto-complete')
+  @ApiOperation({ summary: 'Get auto complete options' })
+  async autoComplelte(
+    @Query() query: OptionQueryDto,
+  ): Promise<ApiResponse<ResponseListDto<OptionDto[]>>> {
+    const options = await this.optionService.autoComplete(query);
+    return ApiResponse.success(options, 'Get auto complete options successfully');
+  }
+
   @Get('get/:id')
   @Permissions('OPT_V')
   @ApiOperation({ summary: 'Get option detail (with values)' })
