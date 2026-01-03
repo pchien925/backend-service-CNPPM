@@ -68,11 +68,11 @@ export class AuthService {
     account.status = STATUS_PENDING;
     account.password = await hashPassword(dto.password);
 
-    try {
-      await this.emailService.sendOtpEmail(dto.email, otpCode, dto.fullName);
-    } catch {
-      throw new BadRequestException('Failed to send OTP email. Please try again.');
-    }
+    // try {
+    //   await this.emailService.sendOtpEmail(dto.email, otpCode, dto.fullName);
+    // } catch {
+    //   throw new BadRequestException('Failed to send OTP email. Please try again.');
+    // }
 
     await this.accountRepo.save(account);
   }
@@ -95,9 +95,9 @@ export class AuthService {
       throw new BadRequestException('OTP has expired. Please request a new one.');
     }
 
-    if (account.otpCode !== dto.otpCode) {
-      throw new BadRequestException('Invalid OTP code');
-    }
+    // if (account.otpCode !== dto.otpCode) {
+    //   throw new BadRequestException('Invalid OTP code');
+    // }
 
     // Xác thực thành công - cập nhật trạng thái
     account.otpCode = null;

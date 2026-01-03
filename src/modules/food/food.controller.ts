@@ -9,6 +9,7 @@ import { FoodDto } from './dtos/food.dto';
 import { UpdateFoodDto } from './dtos/update-food.dto';
 import { FoodService } from './food.service';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('Food')
 @ApiController('food', { auth: true })
@@ -27,6 +28,14 @@ export class FoodController {
   @Permissions('FOOD_L')
   @ApiOperation({ summary: 'Get list of Foods with filtering and pagination' })
   async findAll(@Query() query: FoodQueryDto): Promise<ApiResponse<ResponseListDto<FoodDto[]>>> {
+    const result = await this.foodService.findAll(query);
+    return ApiResponse.success(result, 'Get list Foods successfully');
+  }
+
+  @Get('public-list')
+  @Public()
+  @ApiOperation({ summary: 'Get list of Foods with filtering and pagination' })
+  async publicList(@Query() query: FoodQueryDto): Promise<ApiResponse<ResponseListDto<FoodDto[]>>> {
     const result = await this.foodService.findAll(query);
     return ApiResponse.success(result, 'Get list Foods successfully');
   }

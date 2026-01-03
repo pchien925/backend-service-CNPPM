@@ -115,6 +115,24 @@ export class FoodService {
     return new ResponseListDto(content, totalElements, limit);
   }
 
+  async publicList(query: FoodQueryDto): Promise<ResponseListDto<FoodDto[]>> {
+    const { page = 0, limit = 10 } = query;
+    const filterSpec = new FoodSpecification(query);
+    const where = filterSpec.toWhere();
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.foodRepo.findAndCount({
+      where,
+      relations: ['category', 'foodTags.tag'],
+      order: { id: 'ASC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = FoodMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
+  }
+
   async autoComplete(query: FoodQueryDto): Promise<ResponseListDto<FoodDto[]>> {
     const { page = 0, limit = 10 } = query;
     const filterSpec = new FoodSpecification(query);
