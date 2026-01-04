@@ -20,6 +20,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { TagModule } from './modules/tag/tag.module';
 import { FoodModule } from './modules/food/food.module';
 import { ComboModule } from './modules/combo/combo.module';
+import { CartModule } from './modules/cart/cart.module';
 import { UserContextHelper } from './shared/context/user-context.helper';
 import { NationModule } from './modules/nation/nation.module';
 import { FileModule } from './modules/file/file.module';
@@ -47,6 +48,7 @@ import { AddressModule } from './modules/address/address.module';
     TagModule,
     FoodModule,
     ComboModule,
+    CartModule,
     NationModule,
     FileModule,
     AddressModule,
