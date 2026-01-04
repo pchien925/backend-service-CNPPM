@@ -50,7 +50,7 @@ export class ComboGroupItemController {
     return ApiResponse.successMessage('Items sorted successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('COM_GR_U')
   @ApiOperation({ summary: 'Remove a food from combo group' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
