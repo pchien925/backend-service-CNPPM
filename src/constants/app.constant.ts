@@ -21,3 +21,6 @@ export const NATION_KIND_PROVINCE = 3;
 export const USER_KIND_ADMIN = 1;
 export const USER_KIND_MANAGER = 2;
 export const USER_KIND_CUSTOMER = 3;
+
+export const ITEM_KIND_FOOD = 1;
+export const ITEM_KIND_COMBO = 2;

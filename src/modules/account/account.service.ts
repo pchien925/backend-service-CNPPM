@@ -5,19 +5,20 @@ import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
 import { UnauthorizationException } from 'src/exception/unauthorization.exception';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { hashPassword, verifyPassword } from 'src/utils';
 import { Repository } from 'typeorm';
 import { UserDetailsDto } from '../auth/dtos/user-details.dto';
 import { Group } from '../group/entities/group.entity';
 import { AccountMapper } from './account.mapper';
+import { AccountQueryDto } from './dtos/account-query.dto';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
-import { Account } from './entities/account.entity';
-import { AccountSpecification } from './specification/account.specification';
-import { AccountQueryDto } from './dtos/account-query.dto';
-import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { Account } from './entities/account.entity';
+import { AccountSpecification } from './specification/account.specification';
+import { UserContextHelper } from 'src/shared/context/user-context.helper';
 
 @Injectable()
 export class AccountService {
@@ -45,7 +46,8 @@ export class AccountService {
     return new ResponseListDto(content, totalElements, limit);
   }
 
-  async getAccountById(id: string): Promise<AccountDto> {
+  async getAccountById(): Promise<AccountDto> {
+    const id = UserContextHelper.getId();
     const account = await this.accountRepo.findOne({
       where: { id: id },
       relations: ['group', 'group.permissions'],
@@ -167,7 +169,8 @@ export class AccountService {
     await this.accountRepo.save(account);
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<void> {
+  async updateProfile(dto: UpdateProfileDto): Promise<void> {
+    const userId = UserContextHelper.getId();
     const account = await this.accountRepo.findOne({
       where: { id: userId, status: STATUS_ACTIVE },
       select: ['id', 'email', 'password', 'fullName', 'phone', 'avatarPath'],

@@ -1,13 +1,13 @@
-import { Body, Delete, Get, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Delete, Get, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { AccountService } from './account.service';
 import { AccountQueryDto } from './dtos/account-query.dto';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
-import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 
@@ -25,8 +25,8 @@ export class AccountController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Get current account profile' })
-  async profile(@Req() req: any) {
-    const account = await this.accountService.getAccountById(req.user.id);
+  async profile() {
+    const account = await this.accountService.getAccountById();
     return ApiResponse.success(account, 'Get profile successfully', HttpStatus.OK);
   }
 
@@ -56,8 +56,8 @@ export class AccountController {
 
   @Put('update-profile')
   @ApiOperation({ summary: 'Update profile and/or change password' })
-  async updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto): Promise<ApiResponse<void>> {
-    await this.accountService.updateProfile(req.user.id, dto);
+  async updateProfile(@Body() dto: UpdateProfileDto): Promise<ApiResponse<void>> {
+    await this.accountService.updateProfile(dto);
     return ApiResponse.successMessage('Profile updated successfully');
   }
 
