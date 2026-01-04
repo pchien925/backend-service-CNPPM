@@ -1,20 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
+import { STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
-import { Food } from 'src/modules/food/entities/food.entity';
 import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
-import { DataSource, In, Not, Repository } from 'typeorm';
-import { ComboGroupItemMapper } from './combo-group-item.mapper';
+import { DataSource, Not, Repository } from 'typeorm';
 import { ComboGroupMapper } from './combo-group.mapper';
 import { ComboGroupSortItemDto } from './dtos/combo-group-sort.dto';
 import { ComboGroupDto } from './dtos/combo-group.dto';
 import { ComboGroupQueryDto } from './dtos/combo-group.query.dto';
 import { CreateComboGroupDto } from './dtos/create-combo-group.dto';
 import { UpdateComboGroupDto } from './dtos/update-combo-group.dto';
-import { ComboGroupItem } from './entities/combo-group-item.entity';
 import { ComboGroup } from './entities/combo-group.entity';
 import { Combo } from './entities/combo.entity';
 import { ComboGroupSpecification } from './specification/combo-group.specification';
@@ -24,52 +21,23 @@ export class ComboGroupService {
   constructor(
     @InjectRepository(Combo) private readonly comboRepo: Repository<Combo>,
     @InjectRepository(ComboGroup) private readonly comboGroupRepo: Repository<ComboGroup>,
-    @InjectRepository(ComboGroupItem)
-    private readonly comboGroupItemRepo: Repository<ComboGroupItem>,
-    @InjectRepository(Food)
-    private readonly foodRepo: Repository<Food>,
-
     private readonly dataSource: DataSource,
   ) {}
 
-  private async validateFoodItems(foodIds: string[]): Promise<Map<string, Food>> {
-    const uniqueFoodIds = [...new Set(foodIds)];
-    if (uniqueFoodIds.length === 0) return new Map();
-
-    const foods = await this.foodRepo.findBy({ id: In(uniqueFoodIds), status: STATUS_ACTIVE });
-    if (foods.length !== uniqueFoodIds.length) {
-      throw new NotFoundException(
-        `One or more Food items not found or inactive.`,
-        ErrorCode.FOOD_ERROR_NOT_FOUND,
-      );
-    }
-    return new Map(foods.map(f => [f.id, f]));
-  }
-
   async create(dto: CreateComboGroupDto): Promise<void> {
-    const { comboId, items } = dto;
+    const combo = await this.comboRepo.findOneBy({
+      id: dto.comboId,
+      status: Not(STATUS_DELETE),
+    });
 
-    const combo = await this.comboRepo.findOneBy({ id: comboId, status: Not(STATUS_DELETE) });
     if (!combo) {
-      throw new NotFoundException(`Combo not found.`, ErrorCode.COMBO_ERROR_NOT_FOUND);
+      throw new NotFoundException('Combo not found', ErrorCode.COMBO_ERROR_NOT_FOUND);
     }
 
-    const foodMap = await this.validateFoodItems(items.map(i => i.foodId));
+    const entity = ComboGroupMapper.toEntityFromCreate(dto);
+    entity.combo = combo;
 
-    await this.dataSource.transaction(async manager => {
-      const comboGroupEntity = ComboGroupMapper.toEntityFromCreate(dto);
-      comboGroupEntity.combo = combo;
-      const savedGroup = await manager.save(comboGroupEntity);
-
-      const newItems = items.map(itemDto => {
-        const itemEntity = ComboGroupItemMapper.toEntityFromCreate(itemDto);
-        itemEntity.comboGroup = savedGroup;
-        const foodValue = foodMap.get(itemDto.foodId);
-        itemEntity.food = foodValue;
-        return itemEntity;
-      });
-      await manager.save(newItems);
-    });
+    await this.comboGroupRepo.save(entity);
   }
 
   async findAll(query: ComboGroupQueryDto): Promise<ResponseListDto<ComboGroupDto[]>> {
@@ -117,64 +85,18 @@ export class ComboGroupService {
   }
 
   async update(dto: UpdateComboGroupDto): Promise<void> {
-    const { id: groupId, comboId, items = [] } = dto;
-
-    const groupEntity = await this.comboGroupRepo.findOne({
-      where: { id: groupId, combo: { id: comboId } },
-      relations: ['items'],
+    const entity = await this.comboGroupRepo.findOne({
+      where: { id: dto.id },
+      relations: ['combo'],
     });
 
-    if (!groupEntity) {
-      throw new NotFoundException(`Combo Group not found.`, ErrorCode.COMBO_GROUP_ERROR_NOT_FOUND);
+    if (!entity) {
+      throw new NotFoundException('Combo Group not found', ErrorCode.COMBO_GROUP_ERROR_NOT_FOUND);
     }
 
-    await this.dataSource.transaction(async manager => {
-      const comboGroupRepo = manager.getRepository(ComboGroup);
-      const comboGroupItemRepo = manager.getRepository(ComboGroupItem);
+    const updatedEntity = ComboGroupMapper.toEntityFromUpdate(entity, dto);
 
-      const partialUpdate = ComboGroupMapper.toEntityPartialFromUpdate(dto);
-      await comboGroupRepo.update({ id: groupId }, partialUpdate);
-
-      const itemsToUpdate = items.filter(item => item.id);
-      const itemsToCreate = items.filter(item => !item.id);
-      const requestItemIds = itemsToUpdate.map(i => i.id!);
-
-      const itemsToSoftDelete = groupEntity.items
-        .filter(item => !requestItemIds.includes(item.id))
-        .map(item => item.id);
-
-      if (itemsToSoftDelete.length > 0) {
-        await comboGroupItemRepo.delete({
-          id: In(itemsToSoftDelete),
-        });
-      }
-
-      const allFoodIds = items.map(i => i.foodId);
-      const foodMap = await this.validateFoodItems(allFoodIds);
-
-      for (const itemDto of itemsToUpdate) {
-        await comboGroupItemRepo.update(
-          { id: itemDto.id, comboGroup: { id: groupId } },
-          {
-            extraPrice: itemDto.extraPrice,
-            ordering: itemDto.ordering,
-            food: foodMap.get(itemDto.foodId),
-          },
-        );
-      }
-
-      if (itemsToCreate.length > 0) {
-        const newEntities = itemsToCreate.map(itemDto => {
-          const entity = new ComboGroupItem();
-          entity.comboGroup = groupEntity;
-          entity.food = foodMap.get(itemDto.foodId)!;
-          entity.extraPrice = itemDto.extraPrice ?? 0;
-          entity.ordering = itemDto.ordering ?? 0;
-          return entity;
-        });
-        await manager.save(newEntities);
-      }
-    });
+    await this.comboGroupRepo.save(updatedEntity);
   }
 
   async updateSort(data: ComboGroupSortItemDto[]): Promise<void> {
@@ -183,11 +105,9 @@ export class ComboGroupService {
     await queryRunner.startTransaction();
 
     try {
-      await Promise.all(
-        data.map(item =>
-          queryRunner.manager.update(ComboGroup, { id: item.id }, { ordering: item.ordering }),
-        ),
-      );
+      for (const item of data) {
+        await queryRunner.manager.update(ComboGroup, item.id, { ordering: item.ordering });
+      }
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -203,17 +123,9 @@ export class ComboGroupService {
   }
 
   async delete(id: string): Promise<void> {
-    const groupToDelete = await this.comboGroupRepo.findOneBy({ id, status: Not(STATUS_DELETE) });
-    if (!groupToDelete) {
-      throw new NotFoundException(`Combo Group not found.`, ErrorCode.COMBO_GROUP_ERROR_NOT_FOUND);
+    const result = await this.comboGroupRepo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Combo Group not found', ErrorCode.COMBO_GROUP_ERROR_NOT_FOUND);
     }
-
-    await this.dataSource.transaction(async manager => {
-      await manager
-        .getRepository(ComboGroupItem)
-        .update({ comboGroup: { id } }, { status: STATUS_DELETE });
-
-      await manager.getRepository(ComboGroup).update({ id }, { status: STATUS_DELETE });
-    });
   }
 }

@@ -1,7 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
-import { CreateComboGroupItemDto } from './create-combo-group-item.dto';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateComboGroupDto {
   @ApiProperty({ description: 'ID of the parent combo' })
@@ -35,10 +33,4 @@ export class CreateComboGroupDto {
   @IsInt({ message: 'Ordering must be an integer' })
   @IsOptional()
   ordering?: number;
-
-  @ApiProperty({ type: [CreateComboGroupItemDto] })
-  @IsNotEmpty({ message: 'Items are required' })
-  @ValidateNested({ each: true })
-  @Type(() => CreateComboGroupItemDto)
-  items!: CreateComboGroupItemDto[];
 }
