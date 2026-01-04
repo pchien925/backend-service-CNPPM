@@ -1,26 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Min,
-  ValidateNested,
-} from 'class-validator';
-import { UpdateComboGroupItemDto } from './update-combo-group-item.dto';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateComboGroupDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString({ message: 'ID must be a string' })
   id!: string;
-
-  @ApiProperty({ description: 'ID of the parent combo' })
-  @IsString({ message: 'Combo ID must be a string' })
-  @IsNotEmpty({ message: 'Combo ID is required' })
-  comboId!: string;
 
   @ApiPropertyOptional()
   @IsString({ message: 'Name must be a string' })
@@ -53,11 +38,4 @@ export class UpdateComboGroupDto {
   @IsInt({ message: 'Status must be an integer' })
   @IsOptional()
   status?: number;
-
-  @ApiPropertyOptional({ type: [UpdateComboGroupItemDto] })
-  @IsArray()
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => UpdateComboGroupItemDto)
-  items?: UpdateComboGroupItemDto[];
 }

@@ -1,19 +1,24 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateComboGroupItemDto {
   @ApiProperty()
-  @IsString({ message: 'Food ID must be a string' })
-  @IsNotEmpty({ message: 'Food ID is required' })
+  @IsString()
+  @IsNotEmpty()
+  comboGroupId!: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   foodId!: string;
 
-  @ApiPropertyOptional({ default: 0 })
-  @IsNumber()
-  @IsOptional()
-  extraPrice?: number;
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(0)
+  extraPrice: number = 0;
 
-  @ApiPropertyOptional({ default: 0 })
-  @IsInt({ message: 'Ordering must be an integer' })
+  @ApiPropertyOptional()
+  @IsInt()
   @IsOptional()
   ordering?: number;
 }

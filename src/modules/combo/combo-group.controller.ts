@@ -1,4 +1,4 @@
-import { Body, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
@@ -38,7 +38,7 @@ export class ComboGroupController {
   @Permissions('COM_GR_V')
   @ApiOperation({ summary: 'Get combo group detail' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the combo group' })
-  async findOne(@Param('id', ParseIntPipe) id: string): Promise<ApiResponse<ComboGroupDto>> {
+  async findOne(@Param('id') id: string): Promise<ApiResponse<ComboGroupDto>> {
     const group = await this.comboGroupService.findOne(id);
     return ApiResponse.success(group, 'Get combo group detail successfully');
   }
@@ -66,7 +66,7 @@ export class ComboGroupController {
   @Permissions('COM_GR_D')
   @ApiOperation({ summary: 'Delete a combo group (soft delete)' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the combo group to delete' })
-  async delete(@Param('id', ParseIntPipe) id: string): Promise<ApiResponse<void>> {
+  async delete(@Param('id') id: string): Promise<ApiResponse<void>> {
     await this.comboGroupService.delete(id);
     return ApiResponse.successMessage('Combo group deleted successfully');
   }

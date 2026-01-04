@@ -1,14 +1,14 @@
-import { Body, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiController } from 'src/common/decorators/api-controller.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { ApiResponse } from 'src/shared/dtos/api-response.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 import { ComboService } from './combo.service';
 import { ComboQueryDto } from './dtos/combo-query.dto';
 import { ComboDto } from './dtos/combo.dto';
 import { CreateComboDto } from './dtos/create-combo.dto';
 import { UpdateComboDto } from './dtos/update-combo.dto';
-import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Combo')
 @ApiController('combo', { auth: true })
