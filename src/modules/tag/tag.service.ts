@@ -77,7 +77,7 @@ export class TagService {
   }
 
   async update(dto: UpdateTagDto): Promise<void> {
-    const entity = await this.tagRepo.findOneBy({ id: dto.id, status: 1 });
+    const entity = await this.tagRepo.findOneBy({ id: dto.id, status: STATUS_ACTIVE });
     if (!entity) {
       throw new NotFoundException(`Tag not found.`, ErrorCode.TAG_ERROR_NOT_FOUND);
     }

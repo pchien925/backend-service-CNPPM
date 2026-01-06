@@ -34,6 +34,8 @@ export class ComboService {
   async create(dto: CreateComboDto): Promise<void> {
     const { name, categoryId, tagIds } = dto;
 
+    this.validateDuplicateTagIds(tagIds);
+
     const category = await this.categoryRepo.findOneBy({ id: categoryId, status: STATUS_ACTIVE });
     if (!category) {
       throw new NotFoundException(`Category not found.`, ErrorCode.CATEGORY_ERROR_NOT_FOUND);
@@ -106,6 +108,8 @@ export class ComboService {
   async update(dto: UpdateComboDto): Promise<void> {
     const { id, name, categoryId, tagIds } = dto;
 
+    this.validateDuplicateTagIds(tagIds);
+
     const entity = await this.comboRepo.findOne({
       where: { id, status: Not(STATUS_DELETE) },
       relations: ['category'],
@@ -174,6 +178,18 @@ export class ComboService {
     }
 
     await this.comboRepo.update({ id }, { status: STATUS_DELETE });
+  }
+
+  private validateDuplicateTagIds(tagIds?: string[]) {
+    if (tagIds && tagIds.length > 0) {
+      const unique = new Set(tagIds);
+      if (unique.size !== tagIds.length) {
+        throw new BadRequestException(
+          'Duplicate Tag IDs found in the request.',
+          ErrorCode.COMBO_ERROR_TAG_DUPLICATE,
+        );
+      }
+    }
   }
 
   private async syncComboTags(
