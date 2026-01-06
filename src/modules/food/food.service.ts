@@ -71,7 +71,7 @@ export class FoodService {
     this.validateDuplicateTagIds(tagIds);
 
     const foodEntity = await this.foodRepo.findOne({
-      where: { id, status: In([STATUS_ACTIVE]) },
+      where: { id, status: Not(STATUS_DELETE) },
       relations: ['category', 'foodTags.tag'],
     });
 
@@ -179,7 +179,12 @@ export class FoodService {
 
     if (addIds.length > 0) {
       const tags = await this.tagRepo.findBy({ id: In(addIds), status: STATUS_ACTIVE });
-      const newEntities = tags.map(tag => ({ food, tag }));
+      const newEntities = tags.map(tag =>
+        this.foodTagRepo.create({
+          food,
+          tag,
+        }),
+      );
       await this.foodTagRepo.save(newEntities);
     }
   }

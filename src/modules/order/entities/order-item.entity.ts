@@ -1,8 +1,18 @@
 import { IsInt } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
+import { OrderItemOption } from './order-item-option.entity';
+import { OrderItemComboSelection } from './order-item-combo-selection.entity';
 
 @Entity({ name: 'tbl_order_item' })
 export class OrderItem extends Auditable<string> {
@@ -14,7 +24,7 @@ export class OrderItem extends Auditable<string> {
   itemKind!: number;
 
   @Column({ name: 'item_id', type: 'bigint', comment: 'ID of the Food or Combo' })
-  itemid!: string;
+  itemId!: string;
 
   @Column({ name: 'quantity', type: 'int' })
   @IsInt()
@@ -29,6 +39,12 @@ export class OrderItem extends Auditable<string> {
   @ManyToOne(() => Order, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order!: Order;
+
+  @OneToMany(() => OrderItemOption, opt => opt.orderItem)
+  options!: OrderItemOption[];
+
+  @OneToMany(() => OrderItemComboSelection, cs => cs.orderItem)
+  comboSelections!: OrderItemComboSelection[];
 
   @BeforeInsert()
   generateId() {

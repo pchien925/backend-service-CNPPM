@@ -25,6 +25,8 @@ import { UserContextHelper } from './shared/context/user-context.helper';
 import { NationModule } from './modules/nation/nation.module';
 import { FileModule } from './modules/file/file.module';
 import { AddressModule } from './modules/address/address.module';
+import { BranchModule } from './modules/branch/branch.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -51,7 +53,9 @@ import { AddressModule } from './modules/address/address.module';
     CartModule,
     NationModule,
     FileModule,
+    BranchModule,
     AddressModule,
+    OrderModule,
   ],
   providers: [
     {
