@@ -1,23 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { Order } from './entities/order.entity';
-import { OrderItem } from './entities/order-item.entity';
-import { OrderItemOption } from './entities/order-item-option.entity';
-import { OrderItemComboSelection } from './entities/order-item-combo-selection.entity';
-import { Cart } from '../cart/entities/cart.entity';
-import { CartItem } from '../cart/entities/cart-item.entity';
-import { UserContextHelper } from 'src/shared/context/user-context.helper';
-import { BadRequestException } from 'src/exception/bad-request.exception';
-import { CreateOrderDto } from './dtos/create-order.dto';
-import { NotFoundException } from 'src/exception/not-found.exception';
-import { ErrorCode } from 'src/constants/error-code.constant';
-import { Address } from '../address/entities/address.entity';
-import { Branch } from '../branch/entities/branch.entity';
-import { Account } from '../account/entities/account.entity';
 import * as crypto from 'crypto';
 import * as dayjs from 'dayjs';
-import * as qs from 'qs';
+import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from 'src/exception/bad-request.exception';
+import { NotFoundException } from 'src/exception/not-found.exception';
+import { UserContextHelper } from 'src/shared/context/user-context.helper';
+import { DataSource, Repository } from 'typeorm';
+import { Account } from '../account/entities/account.entity';
+import { Address } from '../address/entities/address.entity';
+import { Branch } from '../branch/entities/branch.entity';
+import { CartItem } from '../cart/entities/cart-item.entity';
+import { Cart } from '../cart/entities/cart.entity';
+import { CreateOrderDto } from './dtos/create-order.dto';
+import { OrderDto, UpdateOrderStatusDto } from './dtos/order.dto';
+import { OrderItemComboSelection } from './entities/order-item-combo-selection.entity';
+import { OrderItemOption } from './entities/order-item-option.entity';
+import { OrderItem } from './entities/order-item.entity';
+import { Order } from './entities/order.entity';
+import { OrderMapper } from './order.mapper';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
+import { OrderSpecification } from './specification/order.specification';
+import { OrderQueryDto } from './dtos/order-query.dto';
 
 @Injectable()
 export class OrderService {
@@ -48,7 +52,10 @@ export class OrderService {
       let deliveryAddress = null;
       if (dto.type === 2) {
         if (!dto.deliveryAddressId) {
-          throw new BadRequestException('Delivery address is required for delivery type');
+          throw new BadRequestException(
+            'Delivery address is required for delivery orders',
+            ErrorCode.DELIVERY_ADDRESS_REQUIRED,
+          );
         }
 
         deliveryAddress = await this.addressRepo.findOne({
@@ -70,7 +77,7 @@ export class OrderService {
       });
 
       if (!cart || Number(cart.totalPrice) <= 0) {
-        throw new BadRequestException('Cart is empty');
+        throw new BadRequestException('Cart is empty', ErrorCode.CART_EMPTY);
       }
 
       const cartItems = await queryRunner.manager.find(CartItem, {
@@ -143,10 +150,7 @@ export class OrderService {
       const paymentUrl = this.createVnPayUrl(savedOrder, ipAddr);
 
       await queryRunner.commitTransaction();
-      return {
-        order: savedOrder,
-        paymentUrl: paymentUrl,
-      };
+      return paymentUrl;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -155,16 +159,70 @@ export class OrderService {
     }
   }
 
-  async getMyOrders() {
+  async findAllAdmin(query: OrderQueryDto): Promise<ResponseListDto<OrderDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const [entities, total] = await this.orderRepo.findAndCount({
+      where: new OrderSpecification(query).toWhere(),
+      relations: ['branch', 'deliveryAddress', 'account'],
+      order: { createdDate: 'DESC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    return new ResponseListDto(OrderMapper.toResponseList(entities), total, limit);
+  }
+
+  async getOrderDetailAdmin(id: string): Promise<OrderDto> {
+    const order = await this.orderRepo.findOne({
+      where: { id },
+      relations: [
+        'branch',
+        'deliveryAddress',
+        'account',
+        'items',
+        'items.options',
+        'items.options.optionValue',
+        'items.comboSelections',
+        'items.comboSelections.selectedFood',
+      ],
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found', ErrorCode.ORDER_NOT_FOUND);
+    }
+
+    return OrderMapper.toResponse(order);
+  }
+
+  /**
+   * ADMIN: Cập nhật trạng thái đơn hàng
+   */
+  async updateStatus(dto: UpdateOrderStatusDto): Promise<void> {
+    const order = await this.orderRepo.findOneBy({ id: dto.id });
+    if (!order) throw new NotFoundException('Order not found');
+
+    order.orderStatus = dto.orderStatus;
+    await this.orderRepo.save(order);
+  }
+
+  /**
+   * USER: Cập nhật hàm getMyOrders để dùng Mapper
+   */
+  async getMyOrders(): Promise<OrderDto[]> {
     const userId = UserContextHelper.getId();
-    return this.orderRepo.find({
+    const entities = await this.orderRepo.find({
       where: { account: { id: userId } },
       order: { createdDate: 'DESC' },
       relations: ['branch', 'deliveryAddress'],
     });
+    return OrderMapper.toResponseList(entities);
   }
 
-  async getOrderDetail(id: string) {
+  /**
+   * USER: Cập nhật hàm getOrderDetail để dùng Mapper
+   */
+  async getOrderDetail(id: string): Promise<OrderDto> {
     const userId = UserContextHelper.getId();
     const order = await this.orderRepo.findOne({
       where: { id, account: { id: userId } },
@@ -179,10 +237,8 @@ export class OrderService {
       ],
     });
 
-    if (!order) {
-      throw new NotFoundException('Order not found', ErrorCode.ORDER_NOT_FOUND);
-    }
-    return order;
+    if (!order) throw new NotFoundException('Order not found');
+    return OrderMapper.toResponse(order);
   }
 
   async cancelOrder(id: string, reason: string) {
@@ -211,81 +267,101 @@ export class OrderService {
   }
   private createVnPayUrl(order: Order, ipAddr: string): string {
     const createDate = dayjs().format('YYYYMMDDHHmmss');
-    const tmnCode = process.env.VNP_TMN_CODE;
     const secretKey = process.env.VNP_HASH_SECRET;
     const vnpUrl = process.env.VNP_URL;
-    const returnUrl = process.env.VNP_RETURN_URL;
-
-    let vnp_Params: any = {};
-    vnp_Params['vnp_Version'] = '2.1.0';
-    vnp_Params['vnp_Command'] = 'pay';
-    vnp_Params['vnp_TmnCode'] = tmnCode;
-    vnp_Params['vnp_Locale'] = 'vn';
-    vnp_Params['vnp_CurrCode'] = 'VND';
-    vnp_Params['vnp_TxnRef'] = order.code;
-    vnp_Params['vnp_OrderInfo'] = `Order ${order.code}`;
-    vnp_Params['vnp_OrderType'] = 'other';
     const totalAmount = Number(order.subAmount) + Number(order.shippingFee);
-    vnp_Params['vnp_Amount'] = Math.round(totalAmount * 100);
-    vnp_Params['vnp_ReturnUrl'] = returnUrl;
-    vnp_Params['vnp_IpAddr'] = ipAddr === '::1' ? '127.0.0.1' : ipAddr; // Fix IPv6
-    vnp_Params['vnp_CreateDate'] = createDate;
+    const vnp_Params: any = {
+      vnp_Version: '2.1.0',
+      vnp_Command: 'pay',
+      vnp_TmnCode: process.env.VNP_TMN_CODE,
+      vnp_Locale: 'vn',
+      vnp_CurrCode: 'VND',
+      vnp_TxnRef: order.code,
+      vnp_OrderInfo: `Thanh toan don hang ${order.code}`,
+      vnp_OrderType: 'other',
+      vnp_Amount: Math.round(totalAmount * 100),
+      vnp_ReturnUrl: process.env.VNP_RETURN_URL,
+      vnp_IpAddr: ipAddr === '::1' ? '127.0.0.1' : ipAddr,
+      vnp_CreateDate: createDate,
+    };
 
-    vnp_Params = this.sortObject(vnp_Params);
+    const sortedKeys = Object.keys(vnp_Params).sort();
 
-    const signData = qs.stringify(vnp_Params, { encode: false });
-
-    const hmac = crypto.createHmac('sha512', secretKey);
-    const signed = hmac.update(signData, 'utf-8').digest('hex');
-
-    vnp_Params['vnp_SecureHash'] = signed;
-
-    // 4. Trả về URL cuối cùng
-    return vnpUrl + '?' + qs.stringify(vnp_Params, { encode: true });
-  }
-
-  private sortObject(obj: any) {
-    const sorted: any = {};
-    const keys = Object.keys(obj).sort();
-
-    keys.forEach(key => {
-      sorted[key] = obj[key];
+    const signData = new URLSearchParams();
+    sortedKeys.forEach(key => {
+      signData.append(key, vnp_Params[key].toString());
     });
 
-    return sorted;
-  }
-  async handleVnPayIpn(params: any) {
-    const secureHash = params['vnp_SecureHash'];
-    delete params['vnp_SecureHash'];
-    delete params['vnp_SecureHashType'];
+    const signDataString = signData.toString();
 
-    const sortedParams = this.sortObject(params);
-    const secretKey = process.env.VNP_HASH_SECRET;
-    const signData = qs.stringify(sortedParams, { encode: false });
     const hmac = crypto.createHmac('sha512', secretKey);
-    const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+    const signed = hmac.update(Buffer.from(signDataString, 'utf-8')).digest('hex');
 
-    if (secureHash === signed) {
-      const orderCode = params['vnp_TxnRef'];
-      const responseCode = params['vnp_ResponseCode'];
+    return `${vnpUrl}?${signDataString}&vnp_SecureHash=${signed}`;
+  }
 
-      const order = await this.orderRepo.findOne({ where: { code: orderCode } });
-      if (!order) return { RspCode: '01', Message: 'Order not found' };
+  async handleVnPayIpn(params: any) {
+    const vnp_SecureHash = params['vnp_SecureHash'];
+    const data = { ...params };
+    delete data['vnp_SecureHash'];
+    delete data['vnp_SecureHashType'];
 
-      if (responseCode === '00') {
-        // Thanh toán thành công
+    const signData = new URLSearchParams();
+    Object.keys(data)
+      .sort()
+      .forEach(key => {
+        if (data[key]) signData.append(key, data[key].toString());
+      });
+
+    const hmac = crypto.createHmac('sha512', process.env.VNP_HASH_SECRET);
+    const signed = hmac.update(Buffer.from(signData.toString(), 'utf-8')).digest('hex');
+
+    if (vnp_SecureHash !== signed) {
+      return {
+        RspCode: '97',
+        Message: 'Invalid signature',
+        ErrorCode: ErrorCode.VNPAY_INVALID_SIGNATURE,
+      };
+    }
+
+    const order = await this.orderRepo.findOne({ where: { code: params['vnp_TxnRef'] } });
+    if (!order) {
+      return {
+        RspCode: '01',
+        Message: 'Order not found',
+        ErrorCode: ErrorCode.VNPAY_ORDER_NOT_FOUND,
+      };
+    }
+
+    const dbTotalAmount = (Number(order.subAmount) + Number(order.shippingFee)) * 100;
+    const vnpAmount = Number(params['vnp_Amount']);
+
+    if (Math.round(dbTotalAmount) !== vnpAmount) {
+      return {
+        RspCode: '04',
+        Message: 'Amount mismatch',
+        ErrorCode: ErrorCode.VNPAY_AMOUNT_MISMATCH,
+      };
+    }
+
+    if (params['vnp_ResponseCode'] === '00') {
+      if (order.paymentStatus !== 2) {
         order.paymentStatus = 2; // Paid
-        order.orderStatus = 2; // Success (hoặc chờ xử lý tiếp)
+        order.orderStatus = 2; // Success/Confirmed
         await this.orderRepo.save(order);
-        return { RspCode: '00', Message: 'Success' };
-      } else {
-        // Thanh toán thất bại
-        order.paymentStatus = 3; // Failed/Refunded
-        await this.orderRepo.save(order);
-        return { RspCode: '00', Message: 'Payment Failed' };
       }
+      return {
+        RspCode: '00',
+        Message: 'Payment successful',
+      };
     } else {
-      return { RspCode: '97', Message: 'Invalid signature' };
+      order.paymentStatus = 3; // Failed
+      await this.orderRepo.save(order);
+      return {
+        RspCode: '00',
+        Message: 'Payment failed and has been recorded',
+        ErrorCode: ErrorCode.VNPAY_PAYMENT_FAILED,
+      };
     }
   }
 }

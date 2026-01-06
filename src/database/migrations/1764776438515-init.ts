@@ -64,7 +64,13 @@ export class Init1764776438515 implements MigrationInterface {
             (6778614941024328, 'List Branches', '/v1/branches/list', 'Get list of all branches with filtering/pagination', 'Branch Management', 1, 'BR_L', 1, 'Admin', NOW(), 'Admin', NOW()),
             (6778614941024329, 'Get Branch detail', '/v1/branches/:id', 'Get detail of a specific branch', 'Branch Management', 0, 'BR_V', 1, 'Admin', NOW(), 'Admin', NOW()),
             (6778614941024330, 'Update Branch', '/v1/branches/update', 'Update branch details or status', 'Branch Management', 0, 'BR_U', 1, 'Admin', NOW(), 'Admin', NOW()),
-            (6778614941024331, 'Delete Branch', '/v1/branches/:id', 'Soft delete a branch record', 'Branch Management', 0, 'BR_D', 1, 'Admin', NOW(), 'Admin', NOW());
+            (6778614941024331, 'Delete Branch', '/v1/branches/:id', 'Soft delete a branch record', 'Branch Management', 0, 'BR_D', 1, 'Admin', NOW(), 'Admin', NOW()),
+
+            (6778614941024332, 'Create Order', '/v1/order/checkout', 'Customer creates a new order', 'Order Management', 0, 'ORD_C', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024333, 'List Orders', '/v1/order/list', 'Admin gets list of all orders with filters', 'Order Management', 1, 'ORD_L', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024334, 'View Order Detail', '/v1/order/detail/:id', 'View full order details and items', 'Order Management', 0, 'ORD_V', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024335, 'Update Order Status', '/v1/order/update-status', 'Admin updates order/payment status', 'Order Management', 0, 'ORD_U', 1, 'Admin', NOW(), 'Admin', NOW()),
+            (6778614941024336, 'Cancel Order', '/v1/order/cancel/:id', 'Customer or Admin cancels an order', 'Order Management', 0, 'ORD_D', 1, 'Admin', NOW(), 'Admin', NOW());
         `);
     await queryRunner.query(`
             INSERT INTO \`tbl_permission_group\` (\`group_id\`, \`permission_id\`) VALUES
@@ -126,7 +132,13 @@ export class Init1764776438515 implements MigrationInterface {
             (15, 6778614941024328),
             (15, 6778614941024329),
             (15, 6778614941024330),
-            (15, 6778614941024331);
+            (15, 6778614941024331),
+
+            (15, 6778614941024332),
+            (15, 6778614941024333),
+            (15, 6778614941024334),
+            (15, 6778614941024335),
+            (15, 6778614941024336);
         `);
   }
 
@@ -152,6 +164,8 @@ export class Init1764776438515 implements MigrationInterface {
       6778614941024322, 6778614941024323, 6778614941024324, 6778614941024325, 6778614941024326,
       // Branch Permissions
       6778614941024327, 6778614941024328, 6778614941024329, 6778614941024330, 6778614941024331,
+      // Order Permissions
+      6778614941024332, 6778614941024333, 6778614941024334, 6778614941024335, 6778614941024336,
     ];
 
     const idList = permissionIds.join(',');
