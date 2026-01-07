@@ -6,15 +6,12 @@ export class FoodDto {
   id!: string;
   name!: string;
   description: string | null = null;
-  basePrice!: number;
-  imageUrl: string | null = null;
-  cookingTime: number | null = null;
-  ordering!: number;
-  status!: number;
-
-  category!: CategoryDto;
-
-  tags!: TagDto[];
-
-  options!: FoodOptionDto[];
+  basePrice?: number;
+  imageUrl?: string | null = null;
+  cookingTime?: number | null = null;
+  ordering?: number;
+  status?: number;
+  category?: CategoryDto;
+  tags?: TagDto[];
+  options?: FoodOptionDto[];
 }

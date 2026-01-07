@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsArray } from 'clas
 
 export class UpdateComboDto {
   @ApiProperty()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'ID cannot be null' })
   @IsString()
   id!: string;
 

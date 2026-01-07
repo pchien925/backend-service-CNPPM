@@ -1,19 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Min,
-  ValidateNested,
-} from 'class-validator';
-import { FoodOptionPayloadDto } from './food-option-payload.dto';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateFoodDto {
   @ApiProperty()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'ID cannot be null' })
   @IsString()
   id!: string;
 
@@ -67,13 +57,4 @@ export class UpdateFoodDto {
   @IsOptional()
   @IsArray()
   tagIds?: string[];
-
-  @ApiPropertyOptional({
-    type: [FoodOptionPayloadDto],
-    description: 'List of Options (overwrite or sync existing options)',
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  options?: FoodOptionPayloadDto[];
 }

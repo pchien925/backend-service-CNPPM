@@ -11,6 +11,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { ComboTag } from './combo-tag.entity';
+import { ComboGroup } from './combo-group.entity';
 
 @Entity({ name: 'tbl_combo' })
 export class Combo extends Auditable<string> {
@@ -39,8 +40,11 @@ export class Combo extends Auditable<string> {
   @JoinColumn({ name: 'category_id' })
   category!: Category;
 
-  @OneToMany(() => ComboTag, comboTag => comboTag.tag)
+  @OneToMany(() => ComboTag, comboTag => comboTag.combo)
   comboTags?: ComboTag[];
+
+  @OneToMany(() => ComboGroup, group => group.combo)
+  groups?: ComboGroup[];
 
   @BeforeInsert()
   generateId() {

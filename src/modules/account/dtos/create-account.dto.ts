@@ -3,10 +3,6 @@ import { IsEmail, IsNotEmpty, IsInt, IsOptional, IsString, Length } from 'class-
 
 export class CreateAccountDto {
   @ApiProperty()
-  @IsInt({ message: 'kind must be an integer' })
-  kind!: number;
-
-  @ApiProperty()
   @IsNotEmpty({ message: 'username should not be empty' })
   @Length(3, 255, { message: 'username must be between 3 and 255 characters' })
   username!: string;
@@ -19,6 +15,10 @@ export class CreateAccountDto {
   @IsNotEmpty({ message: 'password should not be empty' })
   @Length(6, 255, { message: 'password must be between 6 and 255 characters' })
   password!: string;
+
+  @ApiProperty()
+  @IsInt({ message: 'kind must be an integer' })
+  kind!: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -34,7 +34,7 @@ export class CreateAccountDto {
   avatarPath?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @IsNotEmpty()
   @IsString({ message: 'groupId must be a string' })
   groupId?: string; //default gắn 16
 }

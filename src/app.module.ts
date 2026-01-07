@@ -20,7 +20,13 @@ import { CategoryModule } from './modules/category/category.module';
 import { TagModule } from './modules/tag/tag.module';
 import { FoodModule } from './modules/food/food.module';
 import { ComboModule } from './modules/combo/combo.module';
+import { CartModule } from './modules/cart/cart.module';
 import { UserContextHelper } from './shared/context/user-context.helper';
+import { NationModule } from './modules/nation/nation.module';
+import { FileModule } from './modules/file/file.module';
+import { AddressModule } from './modules/address/address.module';
+import { BranchModule } from './modules/branch/branch.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -44,6 +50,12 @@ import { UserContextHelper } from './shared/context/user-context.helper';
     TagModule,
     FoodModule,
     ComboModule,
+    CartModule,
+    NationModule,
+    FileModule,
+    BranchModule,
+    AddressModule,
+    OrderModule,
   ],
   providers: [
     {

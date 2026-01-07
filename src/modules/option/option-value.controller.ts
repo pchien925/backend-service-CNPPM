@@ -8,13 +8,14 @@ import { OptionValueDto } from './dtos/option-value.dto';
 import { UpdateOptionValueDto } from './dtos/update-option-value.dto';
 import { OptionValueService } from './option-value.service';
 import { OptionValueQueryDto } from './dtos/option-value-query.dto';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @ApiTags('Option Value')
 @ApiController('option-value', { auth: true })
 export class OptionValueController {
   constructor(private readonly optionValueService: OptionValueService) {}
 
-  @Post('/create')
+  @Post('create')
   @Permissions('OPV_C')
   @ApiOperation({ summary: 'Create new option value for a specific option' })
   async create(@Body() dto: CreateOptionValueDto): Promise<ApiResponse<void>> {
@@ -22,17 +23,17 @@ export class OptionValueController {
     return ApiResponse.successMessage('Option value created successfully');
   }
 
-  @Get('/list')
+  @Get('list')
   @Permissions('OPV_L')
   @ApiOperation({ summary: 'Get all option values for a specific option' })
   async findAllByOption(
     @Query() query: OptionValueQueryDto,
-  ): Promise<ApiResponse<OptionValueDto[]>> {
-    const values = await this.optionValueService.findAllByOption(query);
-    return ApiResponse.success(values, 'Get list option values successfully');
+  ): Promise<ApiResponse<ResponseListDto<OptionValueDto[]>>> {
+    const result = await this.optionValueService.findAllByOption(query);
+    return ApiResponse.success(result, 'Get list option values successfully');
   }
 
-  @Get(':id')
+  @Get('get/:id')
   @Permissions('OPV_V')
   @ApiOperation({ summary: 'Get option value detail' })
   async findOne(@Param('id') id: string): Promise<ApiResponse<OptionValueDto>> {
@@ -40,7 +41,7 @@ export class OptionValueController {
     return ApiResponse.success(value, 'Get option value detail successfully');
   }
 
-  @Put('/update')
+  @Put('update')
   @Permissions('OPV_U')
   @ApiOperation({ summary: 'Update an existing option value' })
   async update(@Body() dto: UpdateOptionValueDto): Promise<ApiResponse<void>> {
@@ -48,7 +49,7 @@ export class OptionValueController {
     return ApiResponse.successMessage('Option value updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Permissions('OPV_D')
   @ApiOperation({ summary: 'Delete an option value (soft delete)' })
   async delete(@Param('id') id: string): Promise<ApiResponse<void>> {

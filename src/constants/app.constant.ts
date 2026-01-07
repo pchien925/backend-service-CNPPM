@@ -6,10 +6,21 @@ export enum Environment {
   TEST = 'test',
 }
 
-export const DEFAULT_PAGE_LIMIT = 10;
-export const DEFAULT_CURRENT_PAGE = 1;
+export const DEFAULT_PAGE_LIMIT = 20;
+export const DEFAULT_CURRENT_PAGE = 0;
 
 export const STATUS_ACTIVE = 1;
 export const STATUS_PENDING = 0;
 export const STATUS_INACTIVE = -1;
 export const STATUS_DELETE = -2;
+
+export const NATION_KIND_WARD = 1;
+export const NATION_KIND_DISTRICT = 2;
+export const NATION_KIND_PROVINCE = 3;
+
+export const USER_KIND_ADMIN = 1;
+export const USER_KIND_MANAGER = 2;
+export const USER_KIND_CUSTOMER = 3;
+
+export const ITEM_KIND_FOOD = 1;
+export const ITEM_KIND_COMBO = 2;

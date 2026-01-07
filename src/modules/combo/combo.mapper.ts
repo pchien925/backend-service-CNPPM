@@ -31,6 +31,7 @@ export class ComboMapper {
   }
 
   static toResponse(entity: Combo): ComboDto {
+    if (!entity) return null;
     const dto: ComboDto = {
       id: entity.id,
       name: entity.name,
@@ -41,12 +42,15 @@ export class ComboMapper {
       ordering: entity.ordering,
       status: entity.status,
       category: entity.category ? CategoryMapper.toResponse(entity.category) : null,
-      tags: entity.comboTags ? entity.comboTags.map(ct => TagMapper.toResponse(ct.tag)) : [],
+      tags: entity.comboTags
+        ? entity.comboTags.map(ct => TagMapper.toResponse(ct.tag)).filter(Boolean)
+        : [],
     };
     return dto;
   }
 
   static toResponseList(entities: Combo[]): ComboDto[] {
+    if (!entities?.length) return [];
     return entities.map(entity => this.toResponse(entity));
   }
 }

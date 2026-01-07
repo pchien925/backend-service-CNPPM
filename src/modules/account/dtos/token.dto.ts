@@ -1,3 +1,4 @@
 export class TokenDto {
-  accessToken: string;
+  access_token: string;
+  user_kind: number;
 }

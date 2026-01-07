@@ -8,27 +8,32 @@ export class OptionMapper {
   static toEntityFromCreate(dto: CreateOptionDto): Option {
     const entity = new Option();
     entity.name = dto.name;
+    entity.image = dto.image;
     entity.description = dto.description;
     return entity;
   }
 
   static toEntityFromUpdate(entity: Option, dto: UpdateOptionDto): Option {
     if (dto.name !== undefined) entity.name = dto.name;
+    if (dto.image !== undefined) entity.image = dto.image;
     if (dto.description !== undefined) entity.description = dto.description;
     if (dto.status !== undefined) entity.status = dto.status;
     return entity;
   }
 
   static toResponse(entity: Option): OptionDto {
+    if (!entity) return null;
     return {
       id: entity.id,
       name: entity.name,
+      image: entity.image ?? null,
       description: entity.description ?? null,
       status: entity.status,
     };
   }
 
   static toDetailResponse(entity: Option): OptionDto {
+    if (!entity) return null;
     return {
       ...this.toResponse(entity),
       values: entity.values?.length ? OptionValueMapper.toResponseList(entity.values) : [],
@@ -36,6 +41,7 @@ export class OptionMapper {
   }
 
   static toResponseList(entities: Option[]): OptionDto[] {
+    if (!entities?.length) return [];
     return entities.map(entity => this.toResponse(entity));
   }
 }

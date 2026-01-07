@@ -1,8 +1,17 @@
-import { Entity, PrimaryColumn, Column, BeforeInsert, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  BeforeInsert,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
+} from 'typeorm';
 import { IsInt, IsNotEmpty } from 'class-validator';
 import { Auditable } from 'src/database/entities/abstract.entity';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
+import { Account } from 'src/modules/account/entities/account.entity';
 
 @Entity({ name: `tbl_group` })
 export class Group extends Auditable<string> {
@@ -22,6 +31,9 @@ export class Group extends Auditable<string> {
 
   @Column({ name: 'is_system_role', type: 'boolean', default: false })
   isSystemRole: boolean = false;
+
+  @OneToMany(() => Account, account => account.group)
+  accounts?: Account[];
 
   @ManyToMany(() => Permission, permission => permission.groups, {
     cascade: ['insert', 'update'],

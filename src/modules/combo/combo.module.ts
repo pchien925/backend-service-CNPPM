@@ -11,12 +11,14 @@ import { ComboGroupItem } from './entities/combo-group-item.entity';
 import { ComboGroup } from './entities/combo-group.entity';
 import { ComboTag } from './entities/combo-tag.entity';
 import { Combo } from './entities/combo.entity';
+import { ComboGroupItemController } from './combo-group-item.controller';
+import { ComboGroupItemService } from './combo-group-item.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Combo, ComboTag, Category, Tag, ComboGroup, ComboGroupItem, Food]),
   ],
-  providers: [ComboService, ComboGroupService],
-  controllers: [ComboController, ComboGroupController],
+  providers: [ComboService, ComboGroupService, ComboGroupItemService],
+  controllers: [ComboController, ComboGroupController, ComboGroupItemController],
 })
 export class ComboModule {}

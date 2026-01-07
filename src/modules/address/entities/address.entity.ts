@@ -24,7 +24,6 @@ export class Address extends Auditable<string> {
   @IsBoolean()
   isDefault: boolean = false;
 
-  // ManyToOne: Địa chỉ thuộc về một Account
   @ManyToOne(() => Account, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'account_id' })
   account!: Account;

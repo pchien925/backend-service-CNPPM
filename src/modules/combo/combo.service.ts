@@ -15,6 +15,7 @@ import { UpdateComboDto } from './dtos/update-combo.dto';
 import { ComboTag } from './entities/combo-tag.entity';
 import { Combo } from './entities/combo.entity';
 import { ComboSpecification } from './specification/combo.specification';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class ComboService {
@@ -32,6 +33,8 @@ export class ComboService {
 
   async create(dto: CreateComboDto): Promise<void> {
     const { name, categoryId, tagIds } = dto;
+
+    this.validateDuplicateTagIds(tagIds);
 
     const category = await this.categoryRepo.findOneBy({ id: categoryId, status: STATUS_ACTIVE });
     if (!category) {
@@ -72,20 +75,21 @@ export class ComboService {
     });
   }
 
-  async findAll(query: ComboQueryDto): Promise<ComboDto[]> {
-    const { page = 1, limit = 10 } = query;
+  async findAll(query: ComboQueryDto): Promise<ResponseListDto<ComboDto[]>> {
+    const { page = 0, limit = 10 } = query;
     const filterSpec = new ComboSpecification(query);
     const where = filterSpec.toWhere();
 
-    const [entities] = await this.comboRepo.findAndCount({
+    const [entities, totalElements] = await this.comboRepo.findAndCount({
       where,
       relations: ['category', 'comboTags.tag'],
       order: { ordering: 'ASC', id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 
-    return ComboMapper.toResponseList(entities);
+    const content = ComboMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<ComboDto> {
@@ -103,6 +107,8 @@ export class ComboService {
 
   async update(dto: UpdateComboDto): Promise<void> {
     const { id, name, categoryId, tagIds } = dto;
+
+    this.validateDuplicateTagIds(tagIds);
 
     const entity = await this.comboRepo.findOne({
       where: { id, status: Not(STATUS_DELETE) },
@@ -172,6 +178,18 @@ export class ComboService {
     }
 
     await this.comboRepo.update({ id }, { status: STATUS_DELETE });
+  }
+
+  private validateDuplicateTagIds(tagIds?: string[]) {
+    if (tagIds && tagIds.length > 0) {
+      const unique = new Set(tagIds);
+      if (unique.size !== tagIds.length) {
+        throw new BadRequestException(
+          'Duplicate Tag IDs found in the request.',
+          ErrorCode.COMBO_ERROR_TAG_DUPLICATE,
+        );
+      }
+    }
   }
 
   private async syncComboTags(

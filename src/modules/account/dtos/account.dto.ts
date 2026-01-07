@@ -7,5 +7,8 @@ export class AccountDto {
   phone?: string;
   fullName: string;
   avatarPath?: string;
+  isSuperAdmin: boolean;
+  status: number;
+  kind: number;
   group?: GroupDto;
 }

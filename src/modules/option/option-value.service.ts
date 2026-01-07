@@ -18,6 +18,7 @@ import { OptionValueSpecification } from './specification/option-value.specifica
 import { NotFoundException } from 'src/exception/not-found.exception';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class OptionValueService {
@@ -55,20 +56,21 @@ export class OptionValueService {
     await this.optionValueRepo.save(entity);
   }
 
-  async findAllByOption(query: OptionValueQueryDto): Promise<OptionValueDto[]> {
-    const { page = 1, limit = 10 } = query;
+  async findAllByOption(query: OptionValueQueryDto): Promise<ResponseListDto<OptionValueDto[]>> {
+    const { page = 0, limit = 10 } = query;
 
     const filterSpec = new OptionValueSpecification(query);
     const where = filterSpec.toWhere();
 
-    const entities = await this.optionValueRepo.find({
+    const [entities, totalElements] = await this.optionValueRepo.findAndCount({
       where,
       order: { ordering: 'ASC', id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 
-    return OptionValueMapper.toResponseList(entities);
+    const content = OptionValueMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<OptionValueDto> {
@@ -86,9 +88,12 @@ export class OptionValueService {
   }
 
   async update(dto: UpdateOptionValueDto): Promise<void> {
-    const entity = await this.optionValueRepo.findOneBy({
-      id: dto.id,
-      status: Not(STATUS_DELETE),
+    const entity = await this.optionValueRepo.findOne({
+      where: {
+        id: dto.id,
+        status: Not(STATUS_DELETE),
+      },
+      relations: ['option'],
     });
     if (!entity) {
       throw new NotFoundException(

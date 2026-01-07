@@ -1,4 +1,3 @@
-import { Group } from '../group/entities/group.entity';
 import { GroupMapper } from '../group/group.mapper';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
@@ -13,10 +12,8 @@ export class AccountMapper {
     entity.email = dto.email;
     entity.fullName = dto.fullName;
     entity.phone = dto.phone;
+    entity.kind = dto.kind;
     entity.avatarPath = dto.avatarPath;
-    if (dto.groupId) {
-      entity.group = { id: dto.groupId } as Group;
-    }
     return entity;
   }
 
@@ -26,6 +23,8 @@ export class AccountMapper {
     if (dto.fullName !== undefined) entity.fullName = dto.fullName;
     if (dto.phone !== undefined) entity.phone = dto.phone;
     if (dto.avatarPath !== undefined) entity.avatarPath = dto.avatarPath;
+    if (dto.kind !== undefined) entity.kind = dto.kind;
+    if (dto.status !== undefined) entity.status = dto.status;
     return entity;
   }
 
@@ -36,6 +35,9 @@ export class AccountMapper {
       email: entity.email,
       fullName: entity.fullName,
       phone: entity.phone,
+      isSuperAdmin: entity.isSuperAdmin,
+      kind: entity.kind,
+      status: entity.status,
       group: entity.group ? GroupMapper.toResponse(entity.group) : null,
       avatarPath: entity.avatarPath,
     };
@@ -49,6 +51,9 @@ export class AccountMapper {
       fullName: entity.fullName,
       phone: entity.phone,
       avatarPath: entity.avatarPath,
+      isSuperAdmin: entity.isSuperAdmin,
+      kind: entity.kind,
+      status: entity.status,
       group: entity.group ? GroupMapper.toDetailResponse(entity.group) : null,
     };
   }

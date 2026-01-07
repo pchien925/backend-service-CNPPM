@@ -12,6 +12,7 @@ import { UpdateTagDto } from './dtos/update-tag.dto';
 import { Tag } from './entities/tag.entity';
 import { TagSpecification } from './specification/tag.specification';
 import { TagMapper } from './tag.mapper';
+import { ResponseListDto } from 'src/shared/dtos/response-list.dto';
 
 @Injectable()
 export class TagService {
@@ -33,20 +34,38 @@ export class TagService {
     await this.tagRepo.save(entity);
   }
 
-  async findAll(query: TagQueryDto): Promise<TagDto[]> {
-    const { page = 1, limit = 10 } = query;
+  async findAll(query: TagQueryDto): Promise<ResponseListDto<TagDto[]>> {
+    const { page = 0, limit = 10 } = query;
 
     const filterSpec = new TagSpecification(query);
     const where = filterSpec.toWhere();
 
-    const entities = await this.tagRepo.find({
+    const [entities, totalElements] = await this.tagRepo.findAndCount({
       where,
       order: { id: 'ASC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
       take: limit,
     });
 
-    return TagMapper.toResponseList(entities);
+    const content = TagMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
+  }
+  async autoComplete(query: TagQueryDto): Promise<ResponseListDto<TagDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const filterSpec = new TagSpecification(query);
+    const where = filterSpec.toWhere();
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.tagRepo.findAndCount({
+      where,
+      order: { id: 'ASC' },
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = TagMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
   }
 
   async findOne(id: string): Promise<TagDto> {
@@ -58,7 +77,7 @@ export class TagService {
   }
 
   async update(dto: UpdateTagDto): Promise<void> {
-    const entity = await this.tagRepo.findOneBy({ id: dto.id, status: 1 });
+    const entity = await this.tagRepo.findOneBy({ id: dto.id, status: STATUS_ACTIVE });
     if (!entity) {
       throw new NotFoundException(`Tag not found.`, ErrorCode.TAG_ERROR_NOT_FOUND);
     }
@@ -79,10 +98,10 @@ export class TagService {
   }
 
   async delete(id: string): Promise<void> {
-    const result = await this.tagRepo.update({ id }, { status: STATUS_DELETE });
+    const result = await this.tagRepo.delete({ id });
 
     if (result.affected === 0) {
-      throw new NotFoundException(`Tag not found.`, ErrorCode.TAG_ERROR_NOT_FOUND);
+      throw new NotFoundException('Tag not found.', ErrorCode.TAG_ERROR_NOT_FOUND);
     }
   }
 }

@@ -3,7 +3,16 @@ import { Account } from 'src/modules/account/entities/account.entity';
 import { Address } from 'src/modules/address/entities/address.entity';
 import { Branch } from 'src/modules/branch/entities/branch.entity';
 import { SnowflakeValueGenerator } from 'src/shared/id/snowflake-value.generator';
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { OrderItem } from './order-item.entity';
 
 @Entity({ name: 'tbl_order' })
 export class Order extends Auditable<string> {
@@ -58,6 +67,9 @@ export class Order extends Auditable<string> {
   @ManyToOne(() => Branch)
   @JoinColumn({ name: 'branch_id' })
   branch!: Branch;
+
+  @OneToMany(() => OrderItem, item => item.order)
+  items!: OrderItem[];
 
   @BeforeInsert()
   generateId() {

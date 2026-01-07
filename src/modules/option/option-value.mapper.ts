@@ -23,6 +23,7 @@ export class OptionValueMapper {
   }
 
   static toResponse(entity: OptionValue): OptionValueDto {
+    if (!entity) return null;
     return {
       id: entity.id,
       name: entity.name,
@@ -34,6 +35,7 @@ export class OptionValueMapper {
   }
 
   static toResponseList(entities: OptionValue[]): OptionValueDto[] {
+    if (!entities?.length) return [];
     return entities.map(entity => this.toResponse(entity));
   }
 }

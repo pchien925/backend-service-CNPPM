@@ -1,15 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Min,
-  ValidateNested,
-} from 'class-validator';
-import { FoodOptionPayloadDto } from './food-option-payload.dto';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateFoodDto {
   @ApiProperty()
@@ -54,13 +44,4 @@ export class CreateFoodDto {
   @IsOptional()
   @IsArray()
   tagIds?: string[];
-
-  @ApiPropertyOptional({
-    type: [FoodOptionPayloadDto],
-    description: 'List of Options with configurations',
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  options?: FoodOptionPayloadDto[];
 }

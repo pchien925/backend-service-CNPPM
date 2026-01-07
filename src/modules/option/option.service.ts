@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { STATUS_DELETE } from 'src/constants/app.constant';
+import { STATUS_ACTIVE, STATUS_DELETE } from 'src/constants/app.constant';
 import { ErrorCode } from 'src/constants/error-code.constant';
 import { BadRequestException } from 'src/exception/bad-request.exception';
 import { NotFoundException } from 'src/exception/not-found.exception';
@@ -40,7 +40,7 @@ export class OptionService {
   }
 
   async findAll(query: OptionQueryDto): Promise<ResponseListDto<OptionDto[]>> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 0, limit = 10 } = query;
 
     const spec = new OptionSpecification(query);
     const where = spec.toWhere();
@@ -48,7 +48,25 @@ export class OptionService {
     const [entities, totalElements] = await this.optionRepo.findAndCount({
       where,
       order: { id: 'DESC' },
-      skip: (page - 1) * limit,
+      skip: page * limit,
+      take: limit,
+    });
+
+    const content = OptionMapper.toResponseList(entities);
+    return new ResponseListDto(content, totalElements, limit);
+  }
+
+  async autoComplete(query: OptionQueryDto): Promise<ResponseListDto<OptionDto[]>> {
+    const { page = 0, limit = 10 } = query;
+
+    const spec = new OptionSpecification(query);
+    const where = spec.toWhere();
+    where.status = STATUS_ACTIVE;
+
+    const [entities, totalElements] = await this.optionRepo.findAndCount({
+      where,
+      order: { id: 'DESC' },
+      skip: page * limit,
       take: limit,
     });
 

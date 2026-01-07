@@ -13,6 +13,9 @@ export class Option extends Auditable<string> {
   @IsNotEmpty()
   name!: string;
 
+  @Column({ name: 'image', length: 255, nullable: true })
+  image?: string;
+
   @Column({ name: 'description', type: 'text', nullable: true })
   description?: string;
 
